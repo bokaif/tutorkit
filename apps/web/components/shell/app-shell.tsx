@@ -1,17 +1,20 @@
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
+import { CircleNotch } from "@phosphor-icons/react"
 
+import { Landing } from "@/components/auth/landing"
 import { MobileSidebar, Sidebar } from "@/components/shell/sidebar"
 import { Topbar } from "@/components/shell/topbar"
 import { QuickLogFab, QuickLogSheet } from "@/components/shell/quick-log"
 import { CommandPalette } from "@/components/shell/command-palette"
 import { InstallPrompt } from "@/components/shell/install-prompt"
+import { useAuth } from "@/lib/auth"
 import { useHydrate, useTutoringStore } from "@/lib/store"
 import { useFirestoreSync } from "@/lib/sync"
 import { Toaster } from "@workspace/ui/components/sonner"
 
-export function AppShell({ children }: { children: ReactNode }) {
+function AuthedShell({ children }: { children: ReactNode }) {
   const hydrated = useHydrate()
   const students = useTutoringStore((s) => s.students)
   const [quickLogOpen, setQuickLogOpen] = useState(false)
@@ -37,11 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [])
 
   if (!hydrated) {
-    return (
-      <main className="grid h-svh place-items-center bg-background text-muted-foreground">
-        <p className="text-sm">Loading desk...</p>
-      </main>
-    )
+    return <SplashScreen label="Setting up your desk…" />
   }
 
   return (
@@ -77,4 +76,38 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Toaster />
     </div>
   )
+}
+
+function SplashScreen({ label }: { label: string }) {
+  return (
+    <main className="grid h-svh place-items-center bg-background text-muted-foreground">
+      <div className="flex items-center gap-2.5 text-sm">
+        <CircleNotch className="size-4 animate-spin text-primary" />
+        {label}
+      </div>
+    </main>
+  )
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { status } = useAuth()
+
+  if (status === "loading") {
+    return <SplashScreen label="Checking your session…" />
+  }
+
+  if (status === "signed-out") {
+    return (
+      <>
+        <Landing />
+        <Toaster />
+      </>
+    )
+  }
+
+  // status === "signed-in" OR "unconfigured" (no Firebase env) — both render
+  // the app shell. In unconfigured mode the sync hook returns "disabled" and
+  // everything works against localStorage only, which is what dev uses
+  // without a .env.local.
+  return <AuthedShell>{children}</AuthedShell>
 }

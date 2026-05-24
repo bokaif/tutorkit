@@ -9,11 +9,13 @@ import {
   ChartLineUp,
   GraduationCap,
   House,
+  SignOut,
   Stack,
   UsersThree,
   Wallet,
 } from "@phosphor-icons/react"
 
+import { useAuth } from "@/lib/auth"
 import { useTutoringStore } from "@/lib/store"
 import { getClassPaymentState, studentProgress } from "@/lib/derive"
 import type { SyncStatus } from "@/lib/sync"
@@ -60,6 +62,7 @@ function SidebarContent({
   const students = useTutoringStore((s) => s.students)
   const notes = useTutoringStore((s) => s.notes)
   const syncMeta = SYNC_LABEL[syncStatus]
+  const { user, signOut } = useAuth()
 
   const dueCount = useMemo(
     () =>
@@ -176,7 +179,62 @@ function SidebarContent({
           })
         )}
       </div>
+
+      {user ? (
+        <div className="mt-1 flex items-center gap-2.5 rounded-xl border border-border/50 bg-sidebar-accent/40 p-2 pl-2.5">
+          <UserAvatar user={user} />
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="truncate text-[12.5px] font-semibold text-sidebar-foreground">
+              {user.displayName ?? "Tutor"}
+            </p>
+            <p className="truncate text-[10.5px] text-sidebar-foreground/60">
+              {user.email ?? "Signed in"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={signOut}
+            aria-label="Sign out"
+            title="Sign out"
+            className="tactile grid size-8 shrink-0 place-items-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <SignOut className="size-4" />
+          </button>
+        </div>
+      ) : null}
     </div>
+  )
+}
+
+function UserAvatar({
+  user,
+}: {
+  user: { displayName?: string | null; photoURL?: string | null; email?: string | null }
+}) {
+  const initials = (user.displayName ?? user.email ?? "T")
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase()
+
+  if (user.photoURL) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={user.photoURL}
+        alt={user.displayName ?? user.email ?? "Tutor"}
+        referrerPolicy="no-referrer"
+        className="size-8 shrink-0 rounded-full object-cover ring-1 ring-border/60"
+      />
+    )
+  }
+
+  return (
+    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground ring-1 ring-border/60">
+      {initials || "T"}
+    </span>
   )
 }
 

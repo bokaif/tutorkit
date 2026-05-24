@@ -10,7 +10,8 @@ import {
   type Unsubscribe,
 } from "firebase/firestore"
 
-import { ensureSignedIn, getFirebase, isFirebaseConfigured } from "@/lib/firebase"
+import { useAuth } from "@/lib/auth"
+import { getFirebase, isFirebaseConfigured } from "@/lib/firebase"
 import { useTutoringStore } from "@/lib/store"
 import type {
   Payment,
@@ -46,18 +47,18 @@ function shallowEqualArray<T>(a: T[], b: T[]): boolean {
 }
 
 /**
- * Sets up a bidirectional sync between the Zustand tutoring store and the
+ * Bidirectional sync between the Zustand tutoring store and the signed-in
  * user's `users/{uid}` Firestore document. The Firestore SDK's IndexedDB
  * persistence keeps everything working offline (PWA-friendly).
  *
- * - On mount: ensure anonymous-auth sign-in, then subscribe to the user doc.
- * - Remote snapshot newer than the local copy → replace local state.
- * - Local change → debounce-push to Firestore (suppressed when echoing a
- *   remote snapshot back to ourselves).
- *
- * Returns a status enum the UI can surface (e.g. as a sidebar badge).
+ * Requires the user to be signed in via `AuthProvider`. While `loading`,
+ * `unconfigured`, or `signed-out`, the hook returns a non-active status and
+ * does not touch Firestore.
  */
 export function useFirestoreSync(enabled: boolean): SyncStatus {
+  const { user, status: authStatus } = useAuth()
+  const uid = user?.uid ?? null
+
   const students = useTutoringStore((s) => s.students)
   const notes = useTutoringStore((s) => s.notes)
   const payments = useTutoringStore((s) => s.payments)
@@ -68,7 +69,6 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
     isFirebaseConfigured() ? "connecting" : "disabled"
   )
 
-  // Refs used to coordinate echo suppression and reference tracking.
   const docRef = useRef<DocumentReference | null>(null)
   const unsubRef = useRef<Unsubscribe | null>(null)
   const applyingRemote = useRef(false)
@@ -80,71 +80,68 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
     payments: Payment[]
   } | null>(null)
 
-  // 1. Sign in + subscribe to the remote snapshot.
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled || !hydrated) return
     if (!isFirebaseConfigured()) {
       setStatus("disabled")
       return
     }
-    if (!hydrated) return
+    if (authStatus === "loading") {
+      setStatus("connecting")
+      return
+    }
+    if (!uid) {
+      setStatus("disabled")
+      return
+    }
 
-    let cancelled = false
+    const fb = getFirebase()
+    if (!fb) {
+      setStatus("disabled")
+      return
+    }
 
     setStatus("connecting")
+    lastRemoteMs.current = 0
+    lastSnapshot.current = null
+    docRef.current = doc(fb.db, "users", uid)
 
-    ensureSignedIn()
-      .then((user) => {
-        if (cancelled) return
-        const fb = getFirebase()
-        if (!fb) return
+    setStatus("online")
 
-        docRef.current = doc(fb.db, "users", user.uid)
-        setStatus("online")
+    unsubRef.current = onSnapshot(
+      docRef.current,
+      (snap) => {
+        if (!snap.exists()) {
+          applyingRemote.current = false
+          schedulePush()
+          return
+        }
+        const remote = snap.data() as RemoteDoc
+        const remoteMs = remote.updatedAt?.toMillis?.() ?? 0
 
-        unsubRef.current = onSnapshot(
-          docRef.current,
-          (snap) => {
-            if (!snap.exists()) {
-              // No remote doc yet — push current local state up so future
-              // device installs receive it immediately.
-              applyingRemote.current = false
-              schedulePush()
-              return
-            }
-            const remote = snap.data() as RemoteDoc
-            const remoteMs = remote.updatedAt?.toMillis?.() ?? 0
+        if (remoteMs <= lastRemoteMs.current) return
+        lastRemoteMs.current = remoteMs
 
-            // Skip echoes of our own writes.
-            if (remoteMs <= lastRemoteMs.current) return
-            lastRemoteMs.current = remoteMs
-
-            applyingRemote.current = true
-            replaceAll({
-              students: remote.students ?? [],
-              notes: remote.notes ?? [],
-              payments: remote.payments ?? [],
-            })
-            lastSnapshot.current = {
-              students: remote.students ?? [],
-              notes: remote.notes ?? [],
-              payments: remote.payments ?? [],
-            }
-            // Re-enable upstream writes on the next tick.
-            queueMicrotask(() => {
-              applyingRemote.current = false
-            })
-          },
-          (err) => {
-            console.error("[tutorkit] Firestore sync error", err)
-            setStatus("error")
-          }
-        )
-      })
-      .catch((err) => {
-        console.error("[tutorkit] Firebase sign-in failed", err)
+        applyingRemote.current = true
+        replaceAll({
+          students: remote.students ?? [],
+          notes: remote.notes ?? [],
+          payments: remote.payments ?? [],
+        })
+        lastSnapshot.current = {
+          students: remote.students ?? [],
+          notes: remote.notes ?? [],
+          payments: remote.payments ?? [],
+        }
+        queueMicrotask(() => {
+          applyingRemote.current = false
+        })
+      },
+      (err) => {
+        console.error("[tutorkit] Firestore sync error", err)
         setStatus("error")
-      })
+      }
+    )
 
     function schedulePush() {
       if (!docRef.current) return
@@ -169,11 +166,9 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
       }, 800)
     }
 
-    // Stash schedulePush on the ref so the second effect can reuse it.
     pushTrigger.current = schedulePush
 
     return () => {
-      cancelled = true
       if (unsubRef.current) {
         unsubRef.current()
         unsubRef.current = null
@@ -182,11 +177,12 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
         clearTimeout(pushTimer.current)
         pushTimer.current = null
       }
+      docRef.current = null
+      pushTrigger.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, hydrated])
+  }, [enabled, hydrated, authStatus, uid])
 
-  // 2. Push local mutations upstream (debounced).
   const pushTrigger = useRef<(() => void) | null>(null)
   useEffect(() => {
     if (!enabled) return

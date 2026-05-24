@@ -2,11 +2,16 @@
 
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
 import {
+  browserLocalPersistence,
   getAuth,
-  signInAnonymously,
+  GoogleAuthProvider,
   onAuthStateChanged,
+  setPersistence,
+  signInWithPopup,
+  signOut as firebaseSignOut,
   type Auth,
   type User,
+  type Unsubscribe,
 } from "firebase/auth"
 import {
   initializeFirestore,
@@ -31,6 +36,7 @@ export function isFirebaseConfigured(): boolean {
 let _app: FirebaseApp | null = null
 let _auth: Auth | null = null
 let _db: Firestore | null = null
+let _persistencePromise: Promise<void> | null = null
 
 export function getFirebase(): {
   app: FirebaseApp
@@ -46,9 +52,6 @@ export function getFirebase(): {
 
   _app = getApps()[0] ?? initializeApp(config)
 
-  // Persistent IndexedDB cache so the app works offline as a PWA.
-  // `ignoreUndefinedProperties` silently drops `undefined` fields on write
-  // (e.g. `Student.guardianPhone` when blank) instead of throwing.
   _db = initializeFirestore(_app, {
     ignoreUndefinedProperties: true,
     localCache: persistentLocalCache({
@@ -57,36 +60,57 @@ export function getFirebase(): {
   })
 
   _auth = getAuth(_app)
+  // Keep the user signed in across reloads (PWA-friendly).
+  if (!_persistencePromise) {
+    _persistencePromise = setPersistence(_auth, browserLocalPersistence).catch(
+      (err) => {
+        console.error("[tutorkit] auth persistence failed", err)
+      }
+    )
+  }
 
   return { app: _app, auth: _auth, db: _db }
 }
 
-export function ensureSignedIn(): Promise<User> {
+/**
+ * Subscribe to auth state. The callback fires once on first hydration and then
+ * on every sign-in / sign-out. Returns an unsubscribe handle.
+ */
+export function onAuthChange(
+  callback: (user: User | null) => void
+): Unsubscribe {
   const fb = getFirebase()
   if (!fb) {
-    return Promise.reject(
-      new Error("Firebase not configured or running on the server")
-    )
+    queueMicrotask(() => callback(null))
+    return () => {}
+  }
+  return onAuthStateChanged(fb.auth, callback)
+}
+
+/**
+ * Open a Google sign-in popup and resolve with the signed-in user.
+ *
+ * Throws if the provider is not enabled in the Firebase console
+ * (`auth/operation-not-allowed`) or the user closes the popup
+ * (`auth/popup-closed-by-user`).
+ */
+export async function signInWithGoogle(): Promise<User> {
+  const fb = getFirebase()
+  if (!fb) {
+    throw new Error("Firebase is not configured")
   }
 
-  return new Promise((resolve, reject) => {
-    const unsub = onAuthStateChanged(
-      fb.auth,
-      (user) => {
-        if (user) {
-          unsub()
-          resolve(user)
-          return
-        }
-        signInAnonymously(fb.auth).catch((err) => {
-          unsub()
-          reject(err)
-        })
-      },
-      (err) => {
-        unsub()
-        reject(err)
-      }
-    )
-  })
+  await _persistencePromise
+
+  const provider = new GoogleAuthProvider()
+  provider.setCustomParameters({ prompt: "select_account" })
+
+  const result = await signInWithPopup(fb.auth, provider)
+  return result.user
+}
+
+export async function signOut(): Promise<void> {
+  const fb = getFirebase()
+  if (!fb) return
+  await firebaseSignOut(fb.auth)
 }

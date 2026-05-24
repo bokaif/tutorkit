@@ -3,6 +3,7 @@ import { Figtree, Geist, Geist_Mono } from "next/font/google"
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AppShell } from "@/components/shell/app-shell"
+import { AuthProvider } from "@/lib/auth"
 import { cn } from "@workspace/ui/lib/utils"
 
 const figtreeHeading = Figtree({
@@ -62,7 +63,9 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground">
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
