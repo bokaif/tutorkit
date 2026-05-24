@@ -1,0 +1,4 @@
+.vercel
+
+# Heavy textbook PDFs (~600MB) — keep local only; host on Firebase Storage / Vercel Blob.
+public/books/
