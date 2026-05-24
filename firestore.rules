@@ -9,7 +9,7 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.size < 1_500_000;
+        && request.resource.size < 1500000;
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
