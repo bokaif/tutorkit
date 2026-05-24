@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react"
 
 import { formatDate, getSessionItems } from "@/lib/derive"
+import { resolveSafeHref } from "@/lib/safe-url"
 import { useTutoringStore } from "@/lib/store"
 import type {
   Material,
@@ -339,7 +340,9 @@ function MaterialRow({
   onDelete: () => void
 }) {
   const Icon = KIND_ICON[material.kind]
-  const isLink = material.kind !== "note" && Boolean(material.url)
+  const safeUrl =
+    material.kind !== "note" ? resolveSafeHref(material.url) : null
+  const isLink = Boolean(safeUrl)
 
   return (
     <div className="group flex items-start gap-3 rounded-xl bg-secondary/60 p-3 ring-1 ring-border/60 transition-colors hover:bg-secondary hover:ring-border">
@@ -347,12 +350,12 @@ function MaterialRow({
         <Icon weight="duotone" className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isLink ? (
             <a
-              href={material.url}
+              href={safeUrl!}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="truncate text-sm font-semibold hover:underline"
             >
               {material.title}
@@ -369,13 +372,13 @@ function MaterialRow({
         ) : null}
         {isLink ? (
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            {material.url}
+            {safeUrl}
           </p>
         ) : null}
       </div>
       {isLink ? (
         <Button asChild size="icon-xs" variant="ghost">
-          <a href={material.url} target="_blank" rel="noreferrer">
+          <a href={safeUrl!} target="_blank" rel="noopener noreferrer">
             <ArrowSquareOut />
           </a>
         </Button>

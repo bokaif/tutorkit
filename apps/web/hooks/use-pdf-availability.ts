@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 
 import type { Subject } from "@/lib/tutoring-data"
+import { resolveSafeHref } from "@/lib/safe-url"
 
 export type PdfAvailability = Record<string, boolean | "checking">
 
@@ -22,14 +23,15 @@ export function usePdfAvailability(subjects: Subject[]): PdfAvailability {
     async function check() {
       const entries = await Promise.all(
         subjects.map(async (subject) => {
-          if (!subject.bookFile) {
+          const book = resolveSafeHref(subject.bookFile)
+          if (!book) {
             return [subject.id, false] as const
           }
-          if (/^https?:\/\//i.test(subject.bookFile)) {
+          if (book.startsWith("http://") || book.startsWith("https://")) {
             return [subject.id, true] as const
           }
           try {
-            const response = await fetch(subject.bookFile, { method: "HEAD" })
+            const response = await fetch(book, { method: "HEAD" })
             return [subject.id, response.ok] as const
           } catch {
             return [subject.id, false] as const

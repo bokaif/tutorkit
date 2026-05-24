@@ -20,6 +20,7 @@ import {
   getSubject,
   studentProgress,
 } from "@/lib/derive"
+import { resolveSafeHref } from "@/lib/safe-url"
 import { ChapterLadder } from "@/components/students/chapter-ladder"
 import { StudentDialog } from "@/components/students/student-dialog"
 import { SessionFeed } from "@/components/sessions/session-feed"
@@ -185,12 +186,12 @@ function StudentDetail() {
                     <span className="text-sm font-semibold">
                       {subject.name}
                     </span>
-                    {subject.bookFile ? (
+                    {resolveSafeHref(subject.bookFile) ? (
                       <Button asChild size="xs" variant="outline">
                         <a
-                          href={subject.bookFile}
+                          href={resolveSafeHref(subject.bookFile)!}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                         >
                           <ArrowSquareOut data-icon="inline-start" />
                           Open

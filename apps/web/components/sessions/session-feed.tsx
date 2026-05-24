@@ -49,10 +49,10 @@ export function SessionFeed({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid min-w-0 gap-4">
       {grouped.map(([date, dayNotes]) => (
-        <Panel key={date} className="p-4">
-          <header className="flex items-center justify-between gap-3 border-b border-border pb-3">
+        <Panel key={date} className="min-w-0 p-3 sm:p-4">
+          <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
             <h3 className="font-heading text-sm font-semibold tracking-tight">
               {formatDate(date)}
             </h3>

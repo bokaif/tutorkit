@@ -15,6 +15,7 @@ import {
 } from "@phosphor-icons/react"
 
 import { useTutoringStore } from "@/lib/store"
+import { resolveSafeHref } from "@/lib/safe-url"
 import { studentPalette, type Subject } from "@/lib/tutoring-data"
 import { usePdfAvailability } from "@/hooks/use-pdf-availability"
 import { ChapterDetailSheet } from "@/components/library/chapter-detail-sheet"
@@ -224,9 +225,13 @@ function SubjectBody({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        {subject.bookFile ? (
+        {resolveSafeHref(subject.bookFile) ? (
           <Button asChild variant="outline" size="sm">
-            <a href={subject.bookFile} target="_blank" rel="noreferrer">
+            <a
+              href={resolveSafeHref(subject.bookFile)!}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ArrowSquareOut data-icon="inline-start" />
               Open book
             </a>
@@ -536,12 +541,6 @@ function SubjectFormDialog({
           </Button>
         </DialogFooter>
 
-        {!form.name && !isEditing ? (
-          <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <Warning className="size-3.5" weight="duotone" />
-            Give it a name to enable saving.
-          </p>
-        ) : null}
       </DialogContent>
     </Dialog>
   )

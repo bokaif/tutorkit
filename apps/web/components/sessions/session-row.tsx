@@ -23,7 +23,7 @@ export function SessionRow({
   const primarySubject = getSubject(items[0]?.subjectId ?? "")
 
   return (
-    <div className="group flex items-start gap-3 rounded-lg bg-secondary/55 p-3 ring-1 ring-border/60 transition-colors hover:bg-secondary hover:ring-border">
+    <div className="group flex min-w-0 items-start gap-3 rounded-lg bg-secondary/55 p-3 ring-1 ring-border/60 transition-colors hover:bg-secondary hover:ring-border">
       {primarySubject ? (
         <SubjectMark subject={primarySubject} size="md" className="mt-0.5" />
       ) : (
@@ -32,11 +32,11 @@ export function SessionRow({
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {student ? (
             <Link
-              href={`/student?id=${student.id}`}
-              className="flex items-center gap-1.5 text-sm font-semibold hover:underline"
+              href={`/student?id=${encodeURIComponent(student.id)}`}
+              className="flex min-w-0 items-center gap-1.5 text-sm font-semibold hover:underline"
             >
               <StudentAvatar student={student} size="sm" />
               {student.name}

@@ -6,7 +6,11 @@ service cloud.firestore {
     // Only the owner may read, write, or delete it. Anonymous Auth
     // creates a stable uid per device, scoped per Firebase project.
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 1_500_000;
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
 
     // Everything else is denied by default.

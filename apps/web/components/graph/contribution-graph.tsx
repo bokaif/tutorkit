@@ -110,13 +110,13 @@ export function ContributionGraph({
   }, [weeks])
 
   return (
-    <Panel className={cn("p-4 sm:p-5", className)}>
+    <Panel className={cn("min-w-0 overflow-hidden p-4 sm:p-5", className)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
             Contributions
           </p>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <Button
               type="button"
               size="icon-xs"
@@ -139,8 +139,8 @@ export function ContributionGraph({
             >
               <CaretRight />
             </Button>
-            <Pill tone="muted" className="ml-2">
-              {totalClassesInYear} classes . {activeDays} days
+            <Pill tone="muted">
+              {totalClassesInYear} classes · {activeDays} days
             </Pill>
           </div>
         </div>
@@ -163,12 +163,12 @@ export function ContributionGraph({
       </div>
 
       <TooltipProvider>
-        <div className="mt-5 overflow-x-auto pb-1">
-          <div className="inline-flex flex-col gap-1">
+        <div className="mt-5 -mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1 sm:mx-0 sm:px-0">
+          <div className="inline-flex flex-col gap-1 [--heat-cell:12px] sm:[--heat-cell:14px]">
             <div
-              className="relative ml-7 grid gap-[3px] text-[10px] font-semibold text-muted-foreground"
+              className="relative ml-6 grid gap-[3px] text-[10px] font-semibold text-muted-foreground sm:ml-7"
               style={{
-                gridTemplateColumns: `repeat(${weeks.length}, 14px)`,
+                gridTemplateColumns: `repeat(${weeks.length}, var(--heat-cell))`,
               }}
             >
               {monthLabels.map((entry) => (
@@ -183,11 +183,11 @@ export function ContributionGraph({
             </div>
 
             <div className="flex gap-1">
-              <div className="grid grid-rows-7 gap-[3px] pr-1 text-[9.5px] font-semibold text-muted-foreground">
+              <div className="grid grid-rows-7 gap-[3px] pr-1 text-[9px] font-semibold text-muted-foreground sm:text-[9.5px]">
                 {[0, 1, 2, 3, 4, 5, 6].map((idx) => (
                   <span
                     key={idx}
-                    className="flex h-[14px] items-center"
+                    className="flex h-[var(--heat-cell)] items-center"
                     style={{ opacity: idx % 2 === 0 ? 1 : 0 }}
                   >
                     {getWeekdayShort(idx)}
@@ -221,7 +221,7 @@ export function ContributionGraph({
                                 cell.inYear && onSelectDate?.(cell.iso)
                               }
                               className={cn(
-                                "size-[14px] rounded-[3px] outline-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                                "size-[var(--heat-cell)] rounded-[3px] outline-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                                 cell.inYear
                                   ? HEAT_CLASS[cell.level]
                                   : "bg-transparent",
@@ -249,11 +249,11 @@ export function ContributionGraph({
         </div>
       </TooltipProvider>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <p className="text-xs text-muted-foreground">
-          Click a square to see that day&apos;s log.
+          Tap a square to filter the log below.
         </p>
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
           <span>Less</span>
           {[0, 1, 2, 3, 4].map((level) => (
             <span

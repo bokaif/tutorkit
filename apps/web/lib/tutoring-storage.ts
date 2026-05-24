@@ -206,18 +206,50 @@ export function exportTutoringData(
   }
 }
 
+const MAX_IMPORT_BYTES = 2_000_000
+const MAX_IMPORT_STUDENTS = 500
+const MAX_IMPORT_NOTES = 20_000
+const MAX_IMPORT_PAYMENTS = 5_000
+
 export function parseTutoringImport(value: string): TutoringExport {
-  const data = JSON.parse(value) as Partial<TutoringExport>
+  if (value.length > MAX_IMPORT_BYTES) {
+    throw new Error("Import file is too large (max 2 MB).")
+  }
+
+  let data: Partial<TutoringExport>
+  try {
+    data = JSON.parse(value) as Partial<TutoringExport>
+  } catch {
+    throw new Error("Import file is not valid JSON.")
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Import file must be a JSON object.")
+  }
 
   if (!Array.isArray(data.students) || !Array.isArray(data.sessionNotes)) {
     throw new Error("Import file must include students and sessionNotes arrays.")
   }
 
+  if (data.students.length > MAX_IMPORT_STUDENTS) {
+    throw new Error(`Import has too many students (max ${MAX_IMPORT_STUDENTS}).`)
+  }
+  if (data.sessionNotes.length > MAX_IMPORT_NOTES) {
+    throw new Error(`Import has too many session notes (max ${MAX_IMPORT_NOTES}).`)
+  }
+  const payments = Array.isArray(data.payments) ? data.payments : []
+  if (payments.length > MAX_IMPORT_PAYMENTS) {
+    throw new Error(`Import has too many payments (max ${MAX_IMPORT_PAYMENTS}).`)
+  }
+
   return {
     version: 2,
-    exportedAt: data.exportedAt ?? new Date().toISOString(),
+    exportedAt:
+      typeof data.exportedAt === "string"
+        ? data.exportedAt
+        : new Date().toISOString(),
     students: data.students,
     sessionNotes: data.sessionNotes,
-    payments: Array.isArray(data.payments) ? data.payments : [],
+    payments,
   }
 }

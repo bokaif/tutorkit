@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { create } from "zustand"
 
 import { newId, setSubjectRegistry } from "@/lib/derive"
+import { resolveSafeHref } from "@/lib/safe-url"
 import type {
   ChapterMaterials,
   Material,
@@ -385,7 +386,7 @@ export const useTutoringStore = create<TutoringState>((set, get) => ({
         .slice(0, 3)
         .toUpperCase(),
       color: draft.color,
-      bookFile: draft.bookFile?.trim() ?? "",
+      bookFile: resolveSafeHref(draft.bookFile) ?? "",
       chapters: (draft.chapters ?? []).map((c) => c.trim()).filter(Boolean),
       createdAt: now,
       updatedAt: now,
@@ -397,11 +398,16 @@ export const useTutoringStore = create<TutoringState>((set, get) => ({
   },
 
   updateSubject: (id, patch) => {
+    const safeBook =
+      patch.bookFile !== undefined
+        ? (resolveSafeHref(patch.bookFile) ?? "")
+        : undefined
     const next = get().subjects.map((subject) =>
       subject.id === id
         ? {
             ...subject,
             ...patch,
+            ...(safeBook !== undefined ? { bookFile: safeBook } : {}),
             ...(patch.code ? { code: patch.code.slice(0, 3).toUpperCase() } : {}),
             updatedAt: stamp(),
           }
@@ -548,9 +554,20 @@ export const useTutoringStore = create<TutoringState>((set, get) => ({
     if (!subjectMap) return
     const list = subjectMap[chapterIndex]
     if (!list) return
-    const nextList = list.map((m) =>
-      m.id === materialId ? { ...m, ...patch } : m
-    )
+    const nextList = list.map((m) => {
+      if (m.id !== materialId) return m
+      const nextPatch = { ...patch }
+      if (nextPatch.url !== undefined) {
+        nextPatch.url = resolveSafeHref(nextPatch.url) ?? undefined
+      }
+      if (nextPatch.title !== undefined) {
+        nextPatch.title = nextPatch.title.trim().slice(0, 240) || m.title
+      }
+      if (nextPatch.body !== undefined) {
+        nextPatch.body = nextPatch.body.trim().slice(0, 8_000) || undefined
+      }
+      return { ...m, ...nextPatch }
+    })
     const nextSubjectMap = { ...subjectMap, [chapterIndex]: nextList }
     const next = { ...get().chapterMaterials, [subjectId]: nextSubjectMap }
     persistMaterials(next)

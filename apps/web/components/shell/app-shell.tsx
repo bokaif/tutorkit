@@ -60,7 +60,7 @@ function AuthedShell({ children }: { children: ReactNode }) {
             onCommand={() => setCommandOpen(true)}
             onMenu={() => setMenuOpen(true)}
           />
-          <main className="app-scroll min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
+          <main className="app-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-6">
             {children}
           </main>
         </div>
