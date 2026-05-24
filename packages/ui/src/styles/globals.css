@@ -14,39 +14,41 @@
     .default,
     [data-theme="light"],
     [data-theme="default"] {
-        --accent: oklch(0.65 0.18 252);
+        --accent: oklch(0.66 0.13 260);
         --focus: var(--accent);
     }
 
     .dark,
     [data-theme="dark"] {
-        /* Pure-black canvas to match the HeroUI marketing aesthetic */
-        --background: oklch(0% 0 0);
-        --foreground: oklch(0.98 0 0);
+        /* Pure-black canvas */
+        --background: oklch(0.04 0.002 280);
+        --foreground: oklch(0.97 0 0);
 
-        /* Cards / surfaces sit on near-black with a hint of zinc */
-        --surface: oklch(0.13 0.005 285);
-        --surface-secondary: oklch(0.16 0.005 285);
-        --surface-tertiary: oklch(0.19 0.005 285);
+        /* Cards / surfaces — a notch above the canvas so they read as distinct
+           layers without needing borders or shadows. */
+        --surface: oklch(0.17 0.005 280);
+        --surface-secondary: oklch(0.2 0.005 280);
+        --surface-tertiary: oklch(0.23 0.005 280);
 
-        --overlay: oklch(0.14 0.005 285);
+        --overlay: oklch(0.18 0.005 280);
 
-        --default: oklch(0.18 0.005 285);
-        --default-foreground: oklch(0.98 0 0);
-        --muted: oklch(0.62 0.012 285);
+        --default: oklch(0.21 0.005 280);
+        --default-foreground: oklch(0.97 0 0);
+        --muted: oklch(0.68 0.01 280);
 
-        /* HeroUI bright blue primary */
-        --accent: oklch(0.65 0.19 252);
+        /* Soft periwinkle — same lightness as the old saturated blue but with
+           the chroma dialed down so it no longer strains the eye. */
+        --accent: oklch(0.66 0.13 260);
         --accent-foreground: oklch(0.99 0 0);
         --focus: var(--accent);
 
-        --border: oklch(1 0 0 / 8%);
-        --separator: oklch(1 0 0 / 6%);
+        --border: oklch(1 0 0 / 9%);
+        --separator: oklch(1 0 0 / 7%);
 
-        --field-background: oklch(0.13 0.005 285);
+        --field-background: oklch(0.17 0.005 280);
         --field-foreground: var(--foreground);
-        --field-border: oklch(1 0 0 / 8%);
-        --field-placeholder: oklch(0.55 0.01 285);
+        --field-border: oklch(1 0 0 / 9%);
+        --field-placeholder: oklch(0.6 0.01 280);
     }
 }
 
@@ -179,21 +181,21 @@
         transform: scale(0.97);
     }
 
-    /* GitHub-blue-ish heat ramp tuned for the pure-black canvas */
+    /* Contribution heat ramp tuned for the softer periwinkle accent */
     .heat-0 {
         background-color: oklch(1 0 0 / 0.06);
     }
     .heat-1 {
-        background-color: oklch(0.32 0.09 252);
+        background-color: oklch(0.38 0.07 260);
     }
     .heat-2 {
-        background-color: oklch(0.45 0.15 252);
+        background-color: oklch(0.5 0.1 260);
     }
     .heat-3 {
-        background-color: oklch(0.58 0.19 252);
+        background-color: oklch(0.62 0.12 260);
     }
     .heat-4 {
-        background-color: oklch(0.72 0.2 252);
+        background-color: oklch(0.74 0.13 260);
     }
 
     .pulse-cell {
@@ -202,25 +204,20 @@
     @keyframes heat-pulse {
         0% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 oklch(0.65 0.19 252 / 0.55);
+            box-shadow: 0 0 0 0 oklch(0.72 0.12 260 / 0.5);
         }
         60% {
             transform: scale(1.2);
-            box-shadow: 0 0 0 6px oklch(0.65 0.19 252 / 0);
+            box-shadow: 0 0 0 6px oklch(0.72 0.12 260 / 0);
         }
         100% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 oklch(0.65 0.19 252 / 0);
+            box-shadow: 0 0 0 0 oklch(0.72 0.12 260 / 0);
         }
     }
 
-    .glow-primary {
-        box-shadow:
-            0 0 0 1px oklch(1 0 0 / 0.04),
-            0 12px 32px oklch(0.65 0.19 252 / 0.35);
-    }
     .glass-card {
-        background: oklch(0.13 0.005 285 / 0.85);
+        background: oklch(0.17 0.005 280 / 0.85);
         backdrop-filter: blur(18px);
         -webkit-backdrop-filter: blur(18px);
     }
