@@ -11,9 +11,13 @@ import { tourSteps } from "@/components/tour/tour-steps"
 
 type Rect = { top: number; left: number; width: number; height: number }
 
-const CARD_WIDTH = 380
-const CARD_HEIGHT_GUESS = 240
+const CARD_MAX_WIDTH = 420
+const CARD_HEIGHT_GUESS = 320
 const GUTTER = 14
+
+function getCardWidth(vw: number) {
+  return Math.min(CARD_MAX_WIDTH, Math.max(300, vw - GUTTER * 2))
+}
 
 function readRect(selector: string): Rect | null {
   if (typeof document === "undefined") return null
@@ -30,6 +34,8 @@ function computeCardPosition(
 ): CSSProperties {
   const vw = window.innerWidth
   const vh = window.innerHeight
+  const cardWidth = getCardWidth(vw)
+  const safeBottom = Math.max(GUTTER, vh - CARD_HEIGHT_GUESS - GUTTER)
 
   const placements: Array<"right" | "bottom" | "top" | "left"> = preferred
     ? [preferred, "right", "bottom", "top", "left"]
@@ -38,21 +44,21 @@ function computeCardPosition(
   for (const placement of placements) {
     if (placement === "right") {
       const left = rect.left + rect.width + GUTTER
-      if (left + CARD_WIDTH + GUTTER <= vw) {
+      if (left + cardWidth + GUTTER <= vw) {
         const top = clamp(
           rect.top + rect.height / 2 - CARD_HEIGHT_GUESS / 2,
           GUTTER,
-          vh - CARD_HEIGHT_GUESS - GUTTER
+          safeBottom
         )
         return { top, left, position: "absolute" }
       }
     } else if (placement === "left") {
-      const left = rect.left - CARD_WIDTH - GUTTER
+      const left = rect.left - cardWidth - GUTTER
       if (left >= GUTTER) {
         const top = clamp(
           rect.top + rect.height / 2 - CARD_HEIGHT_GUESS / 2,
           GUTTER,
-          vh - CARD_HEIGHT_GUESS - GUTTER
+          safeBottom
         )
         return { top, left, position: "absolute" }
       }
@@ -60,9 +66,9 @@ function computeCardPosition(
       const top = rect.top + rect.height + GUTTER
       if (top + CARD_HEIGHT_GUESS + GUTTER <= vh) {
         const left = clamp(
-          rect.left + rect.width / 2 - CARD_WIDTH / 2,
+          rect.left + rect.width / 2 - cardWidth / 2,
           GUTTER,
-          vw - CARD_WIDTH - GUTTER
+          Math.max(GUTTER, vw - cardWidth - GUTTER)
         )
         return { top, left, position: "absolute" }
       }
@@ -70,9 +76,9 @@ function computeCardPosition(
       const top = rect.top - CARD_HEIGHT_GUESS - GUTTER
       if (top >= GUTTER) {
         const left = clamp(
-          rect.left + rect.width / 2 - CARD_WIDTH / 2,
+          rect.left + rect.width / 2 - cardWidth / 2,
           GUTTER,
-          vw - CARD_WIDTH - GUTTER
+          Math.max(GUTTER, vw - cardWidth - GUTTER)
         )
         return { top, left, position: "absolute" }
       }
@@ -80,8 +86,8 @@ function computeCardPosition(
   }
 
   return {
-    top: clamp(rect.top + rect.height + GUTTER, GUTTER, vh - CARD_HEIGHT_GUESS - GUTTER),
-    left: clamp(rect.left, GUTTER, vw - CARD_WIDTH - GUTTER),
+    top: clamp(rect.top + rect.height + GUTTER, GUTTER, safeBottom),
+    left: clamp(rect.left, GUTTER, Math.max(GUTTER, vw - cardWidth - GUTTER)),
     position: "absolute",
   }
 }
@@ -196,7 +202,7 @@ export function TourOverlay() {
 
       <div
         className={cn(
-          "z-10 w-[min(420px,92vw)] rounded-2xl bg-card p-5 ring-1 ring-border",
+          "z-10 max-h-[calc(100svh-28px)] w-[min(420px,calc(100vw-28px))] overflow-y-auto rounded-2xl bg-card p-5 ring-1 ring-border",
           isCentered ? "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "absolute"
         )}
         style={cardStyle}
