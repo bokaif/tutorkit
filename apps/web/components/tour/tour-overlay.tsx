@@ -152,25 +152,44 @@ export function TourOverlay() {
 
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-label="Product tour">
+      {/*
+        Click-catcher under everything else. Bare transparent layer — no blur,
+        no tint — so the spotlight below can paint the dimming on its own.
+        Click anywhere outside the tooltip to skip the tour.
+      */}
       <button
         type="button"
         aria-label="Skip tour"
         onClick={finish}
-        className="absolute inset-0 cursor-default bg-background/85 backdrop-blur-sm"
+        className="absolute inset-0 cursor-default focus:outline-none"
       />
 
+      {/* For steps with no target we still need a uniformly dim full-screen
+          backdrop (it's the spotlight that would normally provide it). */}
+      {isCentered ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-background/88 backdrop-blur-[3px]"
+        />
+      ) : null}
+
+      {/* Spotlight: a ring sized to the target, with a huge solid box-shadow
+          that dims everything outside the rect. The inside of the ring is
+          fully untouched — no blur, no overlay — so the highlighted element
+          is crystal clear. */}
       {!isCentered && rect ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute rounded-xl ring-2 ring-primary/80"
+          className="pointer-events-none absolute rounded-xl ring-2 ring-primary"
           style={{
             top: rect.top - 6,
             left: rect.left - 6,
             width: rect.width + 12,
             height: rect.height + 12,
             boxShadow:
-              "0 0 0 9999px oklch(0.05 0.003 280 / 0.78), 0 0 26px oklch(0.66 0.18 280 / 0.55)",
-            transition: "all 220ms cubic-bezier(0.23, 1, 0.32, 1)",
+              "0 0 0 9999px oklch(0.04 0.003 280 / 0.86), 0 0 28px 6px oklch(0.66 0.18 280 / 0.6)",
+            transition:
+              "top 220ms cubic-bezier(0.23, 1, 0.32, 1), left 220ms cubic-bezier(0.23, 1, 0.32, 1), width 220ms cubic-bezier(0.23, 1, 0.32, 1), height 220ms cubic-bezier(0.23, 1, 0.32, 1)",
           }}
         />
       ) : null}

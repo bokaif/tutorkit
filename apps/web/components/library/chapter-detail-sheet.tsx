@@ -55,6 +55,13 @@ const KIND_LABEL: Record<MaterialKind, string> = {
 }
 
 /**
+ * Frozen empty array reused across renders so the materials selector below
+ * returns a referentially stable value when a chapter has no materials yet.
+ * Without this, Zustand's snapshot equality check fails and React loops.
+ */
+const EMPTY_MATERIALS: readonly Material[] = Object.freeze([])
+
+/**
  * Right-side drawer that owns everything about a single chapter:
  *  - Materials CRUD (links, notes, file URLs)
  *  - Optional student-scoped session timeline + per-student progress controls
@@ -81,11 +88,14 @@ export function ChapterDetailSheet({
   const chapterTitle =
     subject && chapterIndex != null ? subject.chapters[chapterIndex] : null
 
-  const materials = useTutoringStore((s) =>
-    subject && chapterIndex != null
-      ? s.chapterMaterials[subject.id]?.[chapterIndex] ?? []
-      : []
-  )
+  // Stable empty reference so the Zustand selector doesn't fail the
+  // "result of getSnapshot should be cached" check by returning a fresh []
+  // on every render when this chapter has no materials yet.
+  const materials =
+    useTutoringStore((s) => {
+      if (!subject || chapterIndex == null) return EMPTY_MATERIALS
+      return s.chapterMaterials[subject.id]?.[chapterIndex] ?? EMPTY_MATERIALS
+    }) as Material[]
   const notes = useTutoringStore((s) => s.notes)
 
   const relevantSessions = useMemo(() => {
