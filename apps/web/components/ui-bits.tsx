@@ -11,7 +11,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/60 bg-card shadow-[0_1px_0_oklch(1_0_0_/_0.04)_inset,0_24px_60px_-30px_rgba(0,0,0,0.6)]",
+        "rounded-2xl border border-border/60 bg-card",
         className
       )}
       {...rest}
@@ -169,12 +169,16 @@ export function EmptyState({
   )
 }
 
-const subjectColors: Record<string, { bg: string; fg: string }> = {
-  physics: { bg: "#15803D", fg: "#ECFDF5" },
-  chemistry: { bg: "#E11D48", fg: "#FFF1F2" },
-  mathematics: { bg: "#2563EB", fg: "#EFF6FF" },
-  biology: { bg: "#65A30D", fg: "#F7FEE7" },
-  "higher-mathematics": { bg: "#7C3AED", fg: "#F5F3FF" },
+const subjectColors: Record<string, string> = {
+  physics: "#22C55E",
+  chemistry: "#F43F5E",
+  mathematics: "#3B82F6",
+  biology: "#84CC16",
+  "higher-mathematics": "#A855F7",
+}
+
+export function subjectColor(subjectId: string): string {
+  return subjectColors[subjectId] ?? "#3B82F6"
 }
 
 export function SubjectMark({
@@ -186,10 +190,7 @@ export function SubjectMark({
   size?: "sm" | "md" | "lg"
   className?: string
 }) {
-  const palette = subjectColors[subject.id] ?? {
-    bg: "var(--primary)",
-    fg: "var(--primary-foreground)",
-  }
+  const color = subjectColor(subject.id)
   const sizeClass = {
     sm: "size-6 text-[10px]",
     md: "size-8 text-xs",
@@ -199,11 +200,11 @@ export function SubjectMark({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center rounded-lg font-bold",
+        "grid shrink-0 place-items-center rounded-lg font-bold text-white ring-1 ring-white/10",
         sizeClass,
         className
       )}
-      style={{ backgroundColor: palette.bg, color: palette.fg }}
+      style={{ background: gradientFor(color) }}
     >
       {subject.code}
     </span>
@@ -242,7 +243,7 @@ export function StudentAvatar({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center rounded-full font-semibold text-white ring-1 ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]",
+        "grid shrink-0 place-items-center rounded-full font-semibold text-white ring-1 ring-white/10",
         sizeClass,
         className
       )}

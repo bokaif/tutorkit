@@ -1,6 +1,7 @@
 import {
   subjects,
   type ProgressStatus,
+  type SessionItem,
   type SessionNote,
   type Student,
   type Subject,
@@ -20,6 +21,11 @@ export const newId = () =>
 
 export function getSubject(subjectId: string) {
   return subjects.find((subject) => subject.id === subjectId)
+}
+
+export function getSessionItems(note: SessionNote): SessionItem[] {
+  if (note.items && note.items.length > 0) return note.items
+  return [{ subjectId: note.subjectId, chapterIndex: note.chapterIndex }]
 }
 
 export function getStatus(
@@ -338,7 +344,9 @@ export function getEarningsByMonth(
 export function getTopSubject(notes: SessionNote[]) {
   const counts = new Map<string, number>()
   for (const note of notes) {
-    counts.set(note.subjectId, (counts.get(note.subjectId) ?? 0) + 1)
+    for (const item of getSessionItems(note)) {
+      counts.set(item.subjectId, (counts.get(item.subjectId) ?? 0) + 1)
+    }
   }
   let best: { subjectId: string; count: number } | null = null
   for (const [subjectId, count] of counts) {

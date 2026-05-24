@@ -103,7 +103,7 @@ export function CommandPalette({
                 <CommandItem
                   key={student.id}
                   value={`student ${student.name}`}
-                  onSelect={() => go(`/students/${student.id}`)}
+                  onSelect={() => go(`/student?id=${student.id}`)}
                 >
                   <span
                     className="size-2 rounded-full"

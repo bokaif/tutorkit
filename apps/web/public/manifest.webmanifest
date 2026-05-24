@@ -1,7 +1,7 @@
 {
-  "name": "Teach101 — Home Tutor Desk",
-  "short_name": "Teach101",
-  "description": "Personal home-tutor command center: session log, contribution heat-map, schedule, payments, and revision queue.",
+  "name": "TutorKit — Personal Tutoring Desk",
+  "short_name": "TutorKit",
+  "description": "Personal tutoring command center: session log, contribution heat-map, schedule, payments, and revision queue.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -90,7 +90,7 @@ export default function LibraryPage() {
                   {assigned.map((student) => (
                     <Link
                       key={student.id}
-                      href={`/students/${student.id}`}
+                      href={`/student?id=${student.id}`}
                       className="rounded-full bg-muted/60 px-2 py-0.5 text-[11px] font-semibold hover:bg-muted"
                     >
                       {student.name}

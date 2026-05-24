@@ -11,7 +11,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>
 }
 
-const STORAGE_KEY = "teach101:install-prompt-dismissed-at"
+const STORAGE_KEY = "tutorkit:install-prompt-dismissed-at"
 const COOLDOWN_MS = 1000 * 60 * 60 * 24 * 7 // a week
 
 function isStandalone() {
@@ -44,7 +44,7 @@ export function InstallPrompt() {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .catch((err) =>
-        console.error("[teach101] service worker registration failed", err)
+        console.error("[tutorkit] service worker registration failed", err)
       )
   }, [])
 
@@ -110,16 +110,16 @@ export function InstallPrompt() {
   return (
     <div
       role="dialog"
-      aria-label="Install Teach101"
+      aria-label="Install TutorKit"
       className={cn(
-        "fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-border/60 bg-card/95 p-3.5 shadow-[0_24px_60px_-12px_oklch(0.65_0.19_252/0.35)] backdrop-blur-md sm:right-5 sm:left-auto sm:bottom-24"
+        "fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-border/60 bg-card/95 p-3.5 backdrop-blur-md sm:right-5 sm:left-auto sm:bottom-24"
       )}
     >
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[0_8px_30px_-6px_oklch(0.65_0.19_252/0.55)]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
         <DeviceMobile weight="duotone" className="size-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-heading text-sm font-semibold">Install Teach101</p>
+        <p className="font-heading text-sm font-semibold">Install TutorKit</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {iosHint
             ? "Tap Share, then 'Add to Home Screen' to install."

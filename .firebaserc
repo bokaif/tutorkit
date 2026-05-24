@@ -2,6 +2,12 @@
   "projects": {
     "default": "teach101-app"
   },
-  "targets": {},
+  "targets": {
+    "teach101-app": {
+      "hosting": {
+        "tutorkit": ["tutorkit"]
+      }
+    }
+  },
   "etags": {}
 }

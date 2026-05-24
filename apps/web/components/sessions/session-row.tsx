@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Clock, Trash } from "@phosphor-icons/react"
 
 import { useTutoringStore } from "@/lib/store"
-import { getSubject } from "@/lib/derive"
+import { getSessionItems, getSubject } from "@/lib/derive"
 import type { SessionNote, Student } from "@/lib/tutoring-data"
 import { Pill, StudentAvatar, SubjectMark } from "@/components/ui-bits"
 import { Button } from "@workspace/ui/components/button"
@@ -17,13 +17,15 @@ export function SessionRow({
   note: SessionNote
   student?: Student
 }) {
-  const subject = getSubject(note.subjectId)
+  const items = getSessionItems(note)
   const deleteSession = useTutoringStore((s) => s.deleteSession)
+
+  const primarySubject = getSubject(items[0]?.subjectId ?? "")
 
   return (
     <div className="group flex items-start gap-3 rounded-lg border border-transparent bg-card p-3 transition-colors hover:border-border">
-      {subject ? (
-        <SubjectMark subject={subject} size="md" className="mt-0.5" />
+      {primarySubject ? (
+        <SubjectMark subject={primarySubject} size="md" className="mt-0.5" />
       ) : (
         <span className="mt-0.5 grid size-8 place-items-center rounded-lg bg-muted text-xs font-bold text-muted-foreground">
           ?
@@ -33,7 +35,7 @@ export function SessionRow({
         <div className="flex flex-wrap items-center gap-1.5">
           {student ? (
             <Link
-              href={`/students/${student.id}`}
+              href={`/student?id=${student.id}`}
               className="flex items-center gap-1.5 text-sm font-semibold hover:underline"
             >
               <StudentAvatar student={student} size="sm" />
@@ -44,16 +46,30 @@ export function SessionRow({
               Unknown
             </span>
           )}
-          <span className="text-xs text-muted-foreground">.</span>
-          <span className="text-xs font-medium text-muted-foreground">
-            {subject?.name ?? "Subject"} . Ch {note.chapterIndex + 1}
-          </span>
           {note.durationMin ? (
             <Pill tone="muted" className="gap-1">
               <Clock className="size-3" />
               {note.durationMin}m
             </Pill>
           ) : null}
+        </div>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {items.map((item) => {
+            const subject = getSubject(item.subjectId)
+            if (!subject) return null
+            return (
+              <span
+                key={`${item.subjectId}-${item.chapterIndex}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 py-0.5 pr-2.5 pl-0.5 text-[11px] font-medium text-foreground/85"
+              >
+                <SubjectMark subject={subject} size="sm" />
+                {subject.name}
+                <span className="text-muted-foreground">
+                  · Ch {item.chapterIndex + 1}
+                </span>
+              </span>
+            )
+          })}
         </div>
         {note.note ? (
           <p className="mt-1.5 text-sm text-foreground/85">{note.note}</p>
@@ -69,8 +85,10 @@ export function SessionRow({
         ) : null}
         {note.homework ? (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            <span className="font-semibold uppercase tracking-wider">Homework</span>
-            <span className="mx-1.5">.</span>
+            <span className="font-semibold uppercase tracking-wider">
+              Homework
+            </span>
+            <span className="mx-1.5">·</span>
             {note.homework}
           </p>
         ) : null}

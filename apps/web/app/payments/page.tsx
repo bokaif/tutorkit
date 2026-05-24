@@ -35,6 +35,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import { toast } from "@workspace/ui/components/sonner"
 
 type PaymentDraft = {
@@ -224,23 +231,23 @@ export default function PaymentsPage() {
               <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Student
               </Label>
-              <select
+              <Select
                 value={draft.studentId}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    studentId: event.target.value,
-                  }))
+                onValueChange={(value) =>
+                  setDraft((current) => ({ ...current, studentId: value }))
                 }
-                className="h-10 rounded-lg border border-border bg-card px-3 text-sm shadow-[0_1px_2px_rgb(15_23_42_/_0.04)]"
               >
-                <option value="">Pick a student</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-card">
+                  <SelectValue placeholder="Pick a student" />
+                </SelectTrigger>
+                <SelectContent>
+                  {students.map((student) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -345,7 +352,7 @@ function DueRow({
       <StudentAvatar student={student} />
       <div className="min-w-0 flex-1">
         <Link
-          href={`/students/${student.id}`}
+          href={`/student?id=${student.id}`}
           className="block text-sm font-semibold hover:underline"
         >
           {student.name}

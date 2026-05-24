@@ -1,0 +1,57 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: firebase-hosting-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    env:
+      # NEXT_PUBLIC_* values ship in the client bundle anyway, so they are not secret.
+      NEXT_PUBLIC_FIREBASE_API_KEY: AIzaSyBBku3gZ6NvzuSww-M_gPdXdotSmOntFbE
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: teach101-app.firebaseapp.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: teach101-app
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: teach101-app.firebasestorage.app
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "806334298361"
+      NEXT_PUBLIC_FIREBASE_APP_ID: "1:806334298361:web:d3a2a5dc5a46fe7dd00a28"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEACH101_APP }}
+          projectId: teach101-app
+          target: tutorkit
+          channelId: live

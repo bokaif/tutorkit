@@ -13,6 +13,7 @@ import { useTutoringStore } from "@/lib/store"
 import {
   classesByMonth,
   formatMonth,
+  getSessionItems,
   getStreak,
   getSubject,
   getTopStudent,
@@ -63,7 +64,9 @@ export default function StatsPage() {
   const subjectBreakdown = useMemo(() => {
     const counts = new Map<string, number>()
     for (const note of notes) {
-      counts.set(note.subjectId, (counts.get(note.subjectId) ?? 0) + 1)
+      for (const item of getSessionItems(note)) {
+        counts.set(item.subjectId, (counts.get(item.subjectId) ?? 0) + 1)
+      }
     }
     const total = Array.from(counts.values()).reduce((a, b) => a + b, 0) || 1
     return Array.from(counts.entries())
@@ -228,7 +231,7 @@ export default function StatsPage() {
                 {topStudent?.count} sessions.
               </p>
               <Link
-                href={`/students/${topStudentEntry.id}`}
+                href={`/student?id=${topStudentEntry.id}`}
                 className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
               >
                 Open profile <ArrowRight className="size-3" />
@@ -315,7 +318,7 @@ export default function StatsPage() {
                 return (
                   <Link
                     key={student.id}
-                    href={`/students/${student.id}`}
+                    href={`/student?id=${student.id}`}
                     className="grid gap-1.5 rounded-lg bg-muted/40 px-3 py-2 transition-colors hover:bg-muted"
                   >
                     <div className="flex items-center justify-between gap-2">

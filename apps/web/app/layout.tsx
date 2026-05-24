@@ -18,13 +18,13 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata = {
-  title: "Teach101",
-  description: "Personal home tutor desk",
+  title: "TutorKit",
+  description: "Personal tutoring desk: classes, schedules, payments, progress.",
   manifest: "/manifest.webmanifest",
-  applicationName: "Teach101",
+  applicationName: "TutorKit",
   appleWebApp: {
     capable: true,
-    title: "Teach101",
+    title: "TutorKit",
     statusBarStyle: "black-translucent" as const,
   },
   icons: {

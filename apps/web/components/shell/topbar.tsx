@@ -1,15 +1,19 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { MagnifyingGlass, Plus } from "@phosphor-icons/react"
+import { List, MagnifyingGlass, Plus } from "@phosphor-icons/react"
 
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
-const titleByRoute: { match: (path: string) => boolean; title: string; subtitle: string }[] = [
+const titleByRoute: {
+  match: (path: string) => boolean
+  title: string
+  subtitle: string
+}[] = [
   { match: (p) => p === "/", title: "Today", subtitle: "Today's classes, alerts, quick log" },
   { match: (p) => p.startsWith("/sessions"), title: "Sessions", subtitle: "Heat-graph and class log" },
-  { match: (p) => p.startsWith("/students"), title: "Students", subtitle: "Roster, progress, chapter ladder" },
+  { match: (p) => p === "/student" || p.startsWith("/students"), title: "Students", subtitle: "Roster, progress, chapter ladder" },
   { match: (p) => p.startsWith("/schedule"), title: "Schedule", subtitle: "Weekly grid by student" },
   { match: (p) => p.startsWith("/payments"), title: "Payments", subtitle: "Ledger and monthly earnings" },
   { match: (p) => p.startsWith("/library"), title: "Library", subtitle: "Book shelf and PDFs" },
@@ -19,21 +23,31 @@ const titleByRoute: { match: (path: string) => boolean; title: string; subtitle:
 export function Topbar({
   onQuickLog,
   onCommand,
+  onMenu,
 }: {
   onQuickLog: () => void
   onCommand: () => void
+  onMenu: () => void
 }) {
   const pathname = usePathname()
   const match = titleByRoute.find((entry) => entry.match(pathname))
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-md supports-backdrop-filter:bg-background/55 sm:px-6">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/70 px-3 backdrop-blur-md supports-backdrop-filter:bg-background/55 sm:gap-3 sm:px-6">
+      <button
+        type="button"
+        onClick={onMenu}
+        aria-label="Open navigation"
+        className="tactile grid size-10 shrink-0 place-items-center rounded-xl border border-border/60 bg-card/70 text-foreground md:hidden"
+      >
+        <List className="size-4" />
+      </button>
       <div className="min-w-0 flex-1">
         <p className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
           {match?.subtitle ?? ""}
         </p>
-        <h1 className="font-heading text-lg font-semibold leading-tight">
-          {match?.title ?? "Teach101"}
+        <h1 className="truncate font-heading text-lg font-semibold leading-tight">
+          {match?.title ?? "TutorKit"}
         </h1>
       </div>
       <Button
@@ -55,10 +69,10 @@ export function Topbar({
         type="button"
         size="sm"
         onClick={onQuickLog}
-        className="h-9 rounded-full px-4"
+        className="h-9 rounded-full px-3 sm:px-4"
       >
         <Plus data-icon="inline-start" />
-        Log class
+        <span className="hidden sm:inline">Log class</span>
       </Button>
     </header>
   )

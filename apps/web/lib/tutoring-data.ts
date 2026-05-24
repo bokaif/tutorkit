@@ -39,11 +39,24 @@ export type Student = {
   updatedAt: string
 }
 
+export type SessionItem = {
+  subjectId: string
+  chapterIndex: number
+}
+
 export type SessionNote = {
   id: string
   studentId: string
+  /** Primary subject for the session (back-compat with single-subject notes). */
   subjectId: string
+  /** Primary chapter (back-compat with single-subject notes). */
   chapterIndex: number
+  /**
+   * Optional list of (subject, chapter) pairs covered in a single class.
+   * When present, this is the source of truth and `subjectId`/`chapterIndex`
+   * mirror `items[0]`.
+   */
+  items?: SessionItem[]
   note: string
   tags?: string[]
   homework?: string

@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Suspense, useMemo, useState } from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import {
   ArrowLeft,
   ArrowSquareOut,
@@ -33,9 +33,9 @@ import {
 } from "@/components/ui-bits"
 import { Button } from "@workspace/ui/components/button"
 
-export default function StudentDetailPage() {
-  const params = useParams<{ id: string }>()
-  const id = params?.id ?? ""
+function StudentDetail() {
+  const searchParams = useSearchParams()
+  const id = searchParams?.get("id") ?? ""
 
   const students = useTutoringStore((s) => s.students)
   const allNotes = useTutoringStore((s) => s.notes)
@@ -174,22 +174,18 @@ export default function StudentDetailPage() {
           <Panel className="p-4">
             <h3 className="font-heading text-base font-semibold">Books</h3>
             <div className="mt-3 grid gap-2">
-              {student.assignedSubjectIds.map((id) => {
-                const subject = getSubject(id)
+              {student.assignedSubjectIds.map((sid) => {
+                const subject = getSubject(sid)
                 if (!subject) return null
                 return (
                   <div
-                    key={id}
+                    key={sid}
                     className="flex items-center justify-between gap-2 rounded-lg bg-muted/60 px-3 py-2"
                   >
                     <span className="text-sm font-semibold">
                       {subject.name}
                     </span>
-                    <Button
-                      asChild
-                      size="xs"
-                      variant="outline"
-                    >
+                    <Button asChild size="xs" variant="outline">
                       <a
                         href={subject.bookFile}
                         target="_blank"
@@ -257,5 +253,13 @@ export default function StudentDetailPage() {
 
       <StudentDialog open={editing} onOpenChange={setEditing} student={student} />
     </div>
+  )
+}
+
+export default function StudentDetailPage() {
+  return (
+    <Suspense fallback={null}>
+      <StudentDetail />
+    </Suspense>
   )
 }

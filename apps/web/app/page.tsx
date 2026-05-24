@@ -137,7 +137,7 @@ export default function TodayPage() {
               {upcomingToday.map(({ student, startTime, durationMin }) => (
                 <Link
                   key={`${student.id}-${startTime}`}
-                  href={`/students/${student.id}`}
+                  href={`/student?id=${student.id}`}
                   className="tactile flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:border-primary/30 hover:bg-primary/5"
                 >
                   <StudentAvatar student={student} />
@@ -192,7 +192,7 @@ export default function TodayPage() {
                   return (
                     <Link
                       key={student.id}
-                      href={`/students/${student.id}`}
+                      href={`/student?id=${student.id}`}
                       className="tactile flex items-center gap-2 rounded-lg bg-destructive/5 px-3 py-2 hover:bg-destructive/10"
                     >
                       <StudentAvatar student={student} size="sm" />
@@ -234,7 +234,7 @@ export default function TodayPage() {
                 {revisionItems.slice(0, 4).map((item) => (
                   <Link
                     key={`${item.student.id}-${item.subject.id}-${item.chapterIndex}`}
-                    href={`/students/${item.student.id}`}
+                    href={`/student?id=${item.student.id}`}
                     className="tactile rounded-lg bg-[color:var(--warning)]/10 px-3 py-2 hover:bg-[color:var(--warning)]/15"
                   >
                     <p className="text-sm font-semibold">{item.chapter}</p>

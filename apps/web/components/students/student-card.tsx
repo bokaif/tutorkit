@@ -26,12 +26,12 @@ export function StudentCard({
   const payment = getClassPaymentState(student, notes)
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_24px_48px_-24px_oklch(0.65_0.19_252/0.35)]">
+    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:border-primary/40 hover:bg-card/80">
       <div className="flex items-start gap-3">
         <StudentAvatar student={student} size="lg" />
         <div className="min-w-0 flex-1">
           <Link
-            href={`/students/${student.id}`}
+            href={`/student?id=${student.id}`}
             className="block truncate font-heading text-base font-semibold hover:underline"
           >
             {student.name}

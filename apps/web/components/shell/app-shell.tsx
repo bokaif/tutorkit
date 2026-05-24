@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 
-import { Sidebar } from "@/components/shell/sidebar"
+import { MobileSidebar, Sidebar } from "@/components/shell/sidebar"
 import { Topbar } from "@/components/shell/topbar"
 import { QuickLogFab, QuickLogSheet } from "@/components/shell/quick-log"
 import { CommandPalette } from "@/components/shell/command-palette"
@@ -16,6 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const students = useTutoringStore((s) => s.students)
   const [quickLogOpen, setQuickLogOpen] = useState(false)
   const [commandOpen, setCommandOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const syncStatus = useFirestoreSync(hydrated)
 
   useEffect(() => {
@@ -46,12 +47,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-svh w-full bg-background text-foreground">
       <Sidebar syncStatus={syncStatus} />
+      <MobileSidebar
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        syncStatus={syncStatus}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           onQuickLog={() => setQuickLogOpen(true)}
           onCommand={() => setCommandOpen(true)}
+          onMenu={() => setMenuOpen(true)}
         />
-        <main className="app-scroll min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="app-scroll min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
           {children}
         </main>
       </div>

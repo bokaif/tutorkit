@@ -136,13 +136,13 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
             })
           },
           (err) => {
-            console.error("[teach101] Firestore sync error", err)
+            console.error("[tutorkit] Firestore sync error", err)
             setStatus("error")
           }
         )
       })
       .catch((err) => {
-        console.error("[teach101] Firebase sign-in failed", err)
+        console.error("[tutorkit] Firebase sign-in failed", err)
         setStatus("error")
       })
 
@@ -163,7 +163,7 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
         setDoc(ref, payload)
           .then(() => setStatus("online"))
           .catch((err) => {
-            console.error("[teach101] Firestore push failed", err)
+            console.error("[tutorkit] Firestore push failed", err)
             setStatus("offline")
           })
       }, 800)

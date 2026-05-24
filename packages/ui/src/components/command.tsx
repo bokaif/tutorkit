@@ -59,7 +59,7 @@ function CommandDialog({
         />
         <DialogPrimitive.Content
           className={cn(
-            "fixed top-[20%] left-1/2 z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl bg-popover p-0 text-popover-foreground shadow-[0_24px_80px_rgb(15_23_42_/_0.25)] ring-1 ring-foreground/10 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0"
+            "fixed top-[20%] left-1/2 z-50 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl bg-popover p-0 text-popover-foreground ring-1 ring-border outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0"
           )}
         >
           <DialogPrimitive.Title className="sr-only">

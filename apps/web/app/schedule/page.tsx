@@ -140,15 +140,16 @@ export default function SchedulePage() {
                         32
                       )
                       const color = student.color ?? "#3B82F6"
+                      const background = `linear-gradient(135deg, color-mix(in oklch, ${color} 80%, white 20%), ${color} 55%, color-mix(in oklch, ${color} 70%, black 30%))`
                       return (
                         <Link
                           key={`${student.id}-${slot.dayOfWeek}-${slot.startTime}`}
-                          href={`/students/${student.id}`}
-                          className="tactile absolute inset-x-1.5 overflow-hidden rounded-lg p-2 text-[11px] font-semibold text-white shadow-sm transition hover:brightness-110"
+                          href={`/student?id=${student.id}`}
+                          className="tactile absolute inset-x-1.5 overflow-hidden rounded-lg p-2 text-[11px] font-semibold text-white ring-1 ring-white/10 transition hover:brightness-110"
                           style={{
                             top,
                             height,
-                            backgroundColor: color,
+                            background,
                           }}
                         >
                           <div className="flex items-center gap-1.5">

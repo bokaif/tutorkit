@@ -1,4 +1,4 @@
-/* Teach101 service worker
+/* TutorKit service worker
  *
  * Minimal "app shell" SW so Chromium fires `beforeinstallprompt`:
  *   1. stale-while-revalidate for same-origin GETs
@@ -6,8 +6,8 @@
  * Firestore handles its own offline persistence via IndexedDB.
  */
 
-const VERSION = "teach101-v1"
-const CACHE = `teach101-${VERSION}`
+const VERSION = "tutorkit-v1"
+const CACHE = `tutorkit-${VERSION}`
 const APP_SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"]
 
 self.addEventListener("install", (event) => {

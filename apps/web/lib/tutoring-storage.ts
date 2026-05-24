@@ -8,15 +8,35 @@ import {
   type TutoringExport,
 } from "@/lib/tutoring-data"
 
-const STUDENTS_KEY = "teach101:tutoring:students"
-const NOTES_KEY = "teach101:tutoring:session-notes"
-const PAYMENTS_KEY = "teach101:tutoring:payments"
-const BOOTSTRAPPED_KEY = "teach101:tutoring:bootstrapped"
+const STUDENTS_KEY = "tutorkit:students"
+const NOTES_KEY = "tutorkit:session-notes"
+const PAYMENTS_KEY = "tutorkit:payments"
+const BOOTSTRAPPED_KEY = "tutorkit:bootstrapped"
+const MIGRATED_KEY = "tutorkit:migrated-from-teach101"
+
+const LEGACY_KEYS: Record<string, string> = {
+  [STUDENTS_KEY]: "teach101:tutoring:students",
+  [NOTES_KEY]: "teach101:tutoring:session-notes",
+  [PAYMENTS_KEY]: "teach101:tutoring:payments",
+  [BOOTSTRAPPED_KEY]: "teach101:tutoring:bootstrapped",
+}
+
+function migrateLegacyKeysOnce() {
+  if (typeof window === "undefined") return
+  if (window.localStorage.getItem(MIGRATED_KEY) === "1") return
+  for (const [next, legacy] of Object.entries(LEGACY_KEYS)) {
+    if (window.localStorage.getItem(next) != null) continue
+    const value = window.localStorage.getItem(legacy)
+    if (value != null) window.localStorage.setItem(next, value)
+  }
+  window.localStorage.setItem(MIGRATED_KEY, "1")
+}
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback
 
   try {
+    migrateLegacyKeysOnce()
     const value = window.localStorage.getItem(key)
     return value ? (JSON.parse(value) as T) : fallback
   } catch {
