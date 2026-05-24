@@ -14,7 +14,7 @@
     .default,
     [data-theme="light"],
     [data-theme="default"] {
-        --accent: oklch(0.66 0.13 260);
+        --accent: oklch(0.66 0.18 280);
         --focus: var(--accent);
     }
 
@@ -36,9 +36,9 @@
         --default-foreground: oklch(0.97 0 0);
         --muted: oklch(0.68 0.01 280);
 
-        /* Soft periwinkle — same lightness as the old saturated blue but with
-           the chroma dialed down so it no longer strains the eye. */
-        --accent: oklch(0.66 0.13 260);
+        /* Iris violet — keeps the calm lightness but adds the chroma back
+           so the brand color has character without being aggressive. */
+        --accent: oklch(0.66 0.18 280);
         --accent-foreground: oklch(0.99 0 0);
         --focus: var(--accent);
 
@@ -181,21 +181,21 @@
         transform: scale(0.97);
     }
 
-    /* Contribution heat ramp tuned for the softer periwinkle accent */
+    /* Contribution heat ramp tuned for the iris violet accent */
     .heat-0 {
         background-color: oklch(1 0 0 / 0.06);
     }
     .heat-1 {
-        background-color: oklch(0.38 0.07 260);
+        background-color: oklch(0.38 0.1 280);
     }
     .heat-2 {
-        background-color: oklch(0.5 0.1 260);
+        background-color: oklch(0.5 0.14 280);
     }
     .heat-3 {
-        background-color: oklch(0.62 0.12 260);
+        background-color: oklch(0.62 0.17 280);
     }
     .heat-4 {
-        background-color: oklch(0.74 0.13 260);
+        background-color: oklch(0.74 0.18 280);
     }
 
     .pulse-cell {
@@ -204,15 +204,15 @@
     @keyframes heat-pulse {
         0% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 oklch(0.72 0.12 260 / 0.5);
+            box-shadow: 0 0 0 0 oklch(0.66 0.18 280 / 0.5);
         }
         60% {
             transform: scale(1.2);
-            box-shadow: 0 0 0 6px oklch(0.72 0.12 260 / 0);
+            box-shadow: 0 0 0 6px oklch(0.66 0.18 280 / 0);
         }
         100% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 oklch(0.72 0.12 260 / 0);
+            box-shadow: 0 0 0 0 oklch(0.66 0.18 280 / 0);
         }
     }
 
