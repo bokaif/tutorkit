@@ -159,7 +159,7 @@ export function Landing() {
 
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="relative isolate h-svh w-full overflow-x-hidden overflow-y-auto bg-background text-foreground">
+      <div className="relative isolate h-svh w-full overflow-hidden bg-background text-foreground">
         {/* Ambient — soft radial spotlights + dot grid. */}
         <div
           aria-hidden="true"
@@ -216,9 +216,7 @@ export function Landing() {
                   <h1 className="font-heading text-[2.25rem] font-semibold leading-[1.05] tracking-tight sm:text-[2.75rem] lg:text-[3rem]">
                     The desk every home tutor
                     <br />
-                    <span className="bg-gradient-to-br from-primary via-fuchsia-300/85 to-cyan-300/80 bg-clip-text text-transparent">
-                      actually deserves.
-                    </span>
+                    actually deserves.
                   </h1>
                   <p className="max-w-lg text-[15px] leading-relaxed text-muted-foreground">
                     Log every class in two taps. Watch your year fill with
