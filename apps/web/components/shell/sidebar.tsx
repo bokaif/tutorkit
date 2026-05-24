@@ -112,6 +112,7 @@ function SidebarContent({
               key={item.id}
               href={item.href}
               onClick={onNavigate}
+              data-tour={`nav-${item.id}`}
               className={cn(
                 "tactile group relative flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium",
                 isActive

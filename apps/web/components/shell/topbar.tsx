@@ -1,8 +1,9 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { List, MagnifyingGlass, Plus } from "@phosphor-icons/react"
+import { List, MagnifyingGlass, Plus, Question } from "@phosphor-icons/react"
 
+import { useTour } from "@/components/tour/tour-provider"
 import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -31,6 +32,7 @@ export function Topbar({
 }) {
   const pathname = usePathname()
   const match = titleByRoute.find((entry) => entry.match(pathname))
+  const { start: startTour } = useTour()
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 bg-background/70 px-3 backdrop-blur-md supports-backdrop-filter:bg-background/55 sm:gap-3 sm:px-6">
@@ -50,6 +52,15 @@ export function Topbar({
           {match?.title ?? "TutorKit"}
         </h1>
       </div>
+      <button
+        type="button"
+        onClick={startTour}
+        aria-label="Replay tour"
+        title="Replay tour"
+        className="tactile hidden size-9 shrink-0 place-items-center rounded-full border border-border/60 bg-card/70 text-muted-foreground hover:text-foreground sm:grid"
+      >
+        <Question className="size-4" weight="bold" />
+      </button>
       <Button
         type="button"
         variant="outline"
@@ -69,6 +80,7 @@ export function Topbar({
         type="button"
         size="sm"
         onClick={onQuickLog}
+        data-tour="log-class"
         className="h-9 rounded-full px-3 sm:px-4"
       >
         <Plus data-icon="inline-start" />

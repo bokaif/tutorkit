@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react"
 
-import { subjects } from "@/lib/tutoring-data"
+import type { Subject } from "@/lib/tutoring-data"
 
 export type PdfAvailability = Record<string, boolean | "checking">
 
-export function usePdfAvailability(): PdfAvailability {
+/**
+ * Probe each subject's `bookFile` with a HEAD request. External URLs (https://)
+ * are assumed reachable since CORS / cross-origin probes are unreliable.
+ */
+export function usePdfAvailability(subjects: Subject[]): PdfAvailability {
+  const ids = subjects.map((s) => s.id).join("|")
   const [availability, setAvailability] = useState<PdfAvailability>(() =>
-    subjects.reduce<PdfAvailability>((acc, subject) => {
-      acc[subject.id] = "checking"
-      return acc
-    }, {})
+    Object.fromEntries(subjects.map((s) => [s.id, "checking"]))
   )
 
   useEffect(() => {
@@ -20,6 +22,12 @@ export function usePdfAvailability(): PdfAvailability {
     async function check() {
       const entries = await Promise.all(
         subjects.map(async (subject) => {
+          if (!subject.bookFile) {
+            return [subject.id, false] as const
+          }
+          if (/^https?:\/\//i.test(subject.bookFile)) {
+            return [subject.id, true] as const
+          }
           try {
             const response = await fetch(subject.bookFile, { method: "HEAD" })
             return [subject.id, response.ok] as const
@@ -38,7 +46,8 @@ export function usePdfAvailability(): PdfAvailability {
     return () => {
       cancelled = true
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ids])
 
   return availability
 }

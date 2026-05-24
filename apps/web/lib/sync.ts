@@ -14,9 +14,11 @@ import { useAuth } from "@/lib/auth"
 import { getFirebase, isFirebaseConfigured } from "@/lib/firebase"
 import { useTutoringStore } from "@/lib/store"
 import type {
+  ChapterMaterials,
   Payment,
   SessionNote,
   Student,
+  Subject,
 } from "@/lib/tutoring-data"
 
 export type SyncStatus =
@@ -31,11 +33,15 @@ type RemoteDoc = {
   students?: Student[]
   notes?: SessionNote[]
   payments?: Payment[]
+  subjects?: Subject[]
+  chapterMaterials?: ChapterMaterials
   updatedAt?: { toMillis?: () => number } | null
   schemaVersion?: number
 }
 
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
+
+const DEMO_STUDENT_IDS = new Set(["student-demo-1", "student-demo-2"])
 
 function shallowEqualArray<T>(a: T[], b: T[]): boolean {
   if (a === b) return true
@@ -44,6 +50,33 @@ function shallowEqualArray<T>(a: T[], b: T[]): boolean {
     if (a[i] !== b[i]) return false
   }
   return true
+}
+
+/**
+ * Strips the hard-coded "Kay" / "Rafi" demo records that older builds seeded
+ * into every signed-in user's Firestore doc. Manually-added students never
+ * collide with these IDs because `newId()` always generates random suffixes.
+ */
+function scrubDemoData(remote: RemoteDoc): {
+  students: Student[]
+  notes: SessionNote[]
+  payments: Payment[]
+  changed: boolean
+} {
+  const inStudents = remote.students ?? []
+  const inNotes = remote.notes ?? []
+  const inPayments = remote.payments ?? []
+
+  const students = inStudents.filter((s) => !DEMO_STUDENT_IDS.has(s.id))
+  const notes = inNotes.filter((n) => !DEMO_STUDENT_IDS.has(n.studentId))
+  const payments = inPayments.filter((p) => !DEMO_STUDENT_IDS.has(p.studentId))
+
+  const changed =
+    students.length !== inStudents.length ||
+    notes.length !== inNotes.length ||
+    payments.length !== inPayments.length
+
+  return { students, notes, payments, changed }
 }
 
 /**
@@ -62,6 +95,8 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
   const students = useTutoringStore((s) => s.students)
   const notes = useTutoringStore((s) => s.notes)
   const payments = useTutoringStore((s) => s.payments)
+  const subjects = useTutoringStore((s) => s.subjects)
+  const chapterMaterials = useTutoringStore((s) => s.chapterMaterials)
   const replaceAll = useTutoringStore((s) => s.replaceAll)
   const hydrated = useTutoringStore((s) => s.hydrated)
 
@@ -78,6 +113,8 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
     students: Student[]
     notes: SessionNote[]
     payments: Payment[]
+    subjects: Subject[]
+    chapterMaterials: ChapterMaterials
   } | null>(null)
 
   useEffect(() => {
@@ -123,18 +160,32 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
         lastRemoteMs.current = remoteMs
 
         applyingRemote.current = true
+        const localSubjects = useTutoringStore.getState().subjects
+        const remoteSubjects = remote.subjects ?? localSubjects
+        const localMaterials = useTutoringStore.getState().chapterMaterials
+        const remoteMaterials = remote.chapterMaterials ?? localMaterials
+
+        const scrubbed = scrubDemoData(remote)
+
         replaceAll({
-          students: remote.students ?? [],
-          notes: remote.notes ?? [],
-          payments: remote.payments ?? [],
+          students: scrubbed.students,
+          notes: scrubbed.notes,
+          payments: scrubbed.payments,
+          subjects: remoteSubjects,
+          chapterMaterials: remoteMaterials,
         })
         lastSnapshot.current = {
-          students: remote.students ?? [],
-          notes: remote.notes ?? [],
-          payments: remote.payments ?? [],
+          students: scrubbed.students,
+          notes: scrubbed.notes,
+          payments: scrubbed.payments,
+          subjects: remoteSubjects,
+          chapterMaterials: remoteMaterials,
         }
         queueMicrotask(() => {
           applyingRemote.current = false
+          // If we just dropped demo rows out of the local copy, immediately
+          // push the cleanup back so it's never re-applied across devices.
+          if (scrubbed.changed) schedulePush()
         })
       },
       (err) => {
@@ -154,6 +205,8 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
           students: useTutoringStore.getState().students,
           notes: useTutoringStore.getState().notes,
           payments: useTutoringStore.getState().payments,
+          subjects: useTutoringStore.getState().subjects,
+          chapterMaterials: useTutoringStore.getState().chapterMaterials,
           updatedAt: serverTimestamp(),
           schemaVersion: SCHEMA_VERSION,
         }
@@ -195,14 +248,16 @@ export function useFirestoreSync(enabled: boolean): SyncStatus {
       prev &&
       shallowEqualArray(prev.students, students) &&
       shallowEqualArray(prev.notes, notes) &&
-      shallowEqualArray(prev.payments, payments)
+      shallowEqualArray(prev.payments, payments) &&
+      shallowEqualArray(prev.subjects, subjects) &&
+      prev.chapterMaterials === chapterMaterials
     ) {
       return
     }
 
-    lastSnapshot.current = { students, notes, payments }
+    lastSnapshot.current = { students, notes, payments, subjects, chapterMaterials }
     pushTrigger.current()
-  }, [enabled, students, notes, payments])
+  }, [enabled, students, notes, payments, subjects, chapterMaterials])
 
   return status
 }

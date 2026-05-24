@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { ArrowRight } from "@phosphor-icons/react"
 
 import { useTutoringStore } from "@/lib/store"
 import { getChapters, getSubject, subjectProgress } from "@/lib/derive"
 import type { ProgressStatus, Student, Subject } from "@/lib/tutoring-data"
+import { ChapterDetailSheet } from "@/components/library/chapter-detail-sheet"
 import { Panel, Pill, SubjectMark } from "@/components/ui-bits"
 import { Progress } from "@workspace/ui/components/progress"
 import { cn } from "@workspace/ui/lib/utils"
@@ -34,9 +36,11 @@ const STATUS_TONE: Record<ProgressStatus, string> = {
 
 export function ChapterLadder({ student }: { student: Student }) {
   const setChapterStatus = useTutoringStore((s) => s.setChapterStatus)
+  const chapterMaterials = useTutoringStore((s) => s.chapterMaterials)
   const [activeSubjectId, setActiveSubjectId] = useState(
     student.assignedSubjectIds[0] ?? ""
   )
+  const [openChapterIndex, setOpenChapterIndex] = useState<number | null>(null)
 
   const subject = getSubject(activeSubjectId)
   if (!subject) {
@@ -45,6 +49,7 @@ export function ChapterLadder({ student }: { student: Student }) {
 
   const chapters = getChapters(student, subject.id)
   const progress = subjectProgress(student, subject.id)
+  const materialsForSubject = chapterMaterials[subject.id] ?? {}
 
   return (
     <Panel className="p-4">
@@ -92,6 +97,8 @@ export function ChapterLadder({ student }: { student: Student }) {
             chapter={chapter.chapter}
             index={chapter.chapterIndex}
             status={chapter.status}
+            materialCount={materialsForSubject[chapter.chapterIndex]?.length ?? 0}
+            onOpen={() => setOpenChapterIndex(chapter.chapterIndex)}
             onStatus={(status) =>
               setChapterStatus(
                 student.id,
@@ -103,6 +110,16 @@ export function ChapterLadder({ student }: { student: Student }) {
           />
         ))}
       </div>
+
+      <ChapterDetailSheet
+        open={openChapterIndex !== null}
+        onOpenChange={(next) => {
+          if (!next) setOpenChapterIndex(null)
+        }}
+        subject={subject}
+        chapterIndex={openChapterIndex}
+        student={student}
+      />
     </Panel>
   )
 }
@@ -112,22 +129,42 @@ function ChapterRow({
   chapter,
   index,
   status,
+  materialCount,
   onStatus,
+  onOpen,
 }: {
   subject: Subject
   chapter: string
   index: number
   status: ProgressStatus
+  materialCount: number
   onStatus: (status: ProgressStatus) => void
+  onOpen: () => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-transparent px-2 py-2 hover:bg-muted/50">
-      <span className="grid size-7 place-items-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-        {index + 1}
-      </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">
-        {chapter}
-      </span>
+    <div className="group flex flex-wrap items-center gap-2 rounded-lg bg-secondary/40 px-2 py-2 ring-1 ring-border/50 transition-colors hover:bg-secondary hover:ring-border">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="tactile flex min-w-0 flex-1 items-center gap-2 text-left"
+        aria-label={`Open chapter ${index + 1}: ${chapter}`}
+      >
+        <span className="grid size-7 shrink-0 place-items-center rounded-md bg-card text-xs font-semibold text-muted-foreground ring-1 ring-border">
+          {index + 1}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium group-hover:text-primary">
+          {chapter}
+        </span>
+        {materialCount > 0 ? (
+          <Pill tone="primary">
+            {materialCount} {materialCount === 1 ? "item" : "items"}
+          </Pill>
+        ) : null}
+        <span className="hidden items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground transition-opacity group-hover:text-primary sm:inline-flex">
+          Open
+          <ArrowRight weight="bold" className="size-3" />
+        </span>
+      </button>
       <Pill tone="muted" className="md:hidden">
         {STATUS_LABEL[status]}
       </Pill>

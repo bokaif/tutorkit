@@ -102,8 +102,8 @@ export default function TodayPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Panel className="p-4 sm:p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
+        <Panel className="flex min-h-[420px] flex-col p-4 sm:p-5">
           <header className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -127,13 +127,13 @@ export default function TodayPage() {
 
           {upcomingToday.length === 0 ? (
             <EmptyState
-              className="mt-4"
+              className="mt-4 flex-1 justify-center"
               icon={<CalendarBlank weight="duotone" className="size-6" />}
               title="No classes scheduled today"
-              description="Add weekly slots in Schedule."
+              description="Add a student, then drop weekly slots in Schedule."
             />
           ) : (
-            <div className="mt-4 grid gap-2">
+            <div className="mt-4 flex-1 grid gap-2 content-start">
               {upcomingToday.map(({ student, startTime, durationMin }) => (
                 <Link
                   key={`${student.id}-${startTime}`}

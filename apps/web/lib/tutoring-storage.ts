@@ -1,18 +1,25 @@
 import {
+  defaultSubjects,
   demoPayments,
   demoSessionNotes,
   demoStudents,
+  type ChapterMaterials,
   type Payment,
   type SessionNote,
   type Student,
+  type Subject,
   type TutoringExport,
 } from "@/lib/tutoring-data"
 
 const STUDENTS_KEY = "tutorkit:students"
 const NOTES_KEY = "tutorkit:session-notes"
 const PAYMENTS_KEY = "tutorkit:payments"
+const SUBJECTS_KEY = "tutorkit:subjects"
+const MATERIALS_KEY = "tutorkit:chapter-materials"
 const BOOTSTRAPPED_KEY = "tutorkit:bootstrapped"
 const MIGRATED_KEY = "tutorkit:migrated-from-teach101"
+const SUBJECTS_SEEDED_KEY = "tutorkit:subjects-seeded"
+const DEMO_PURGE_KEY = "tutorkit:demo-students-purged"
 
 const LEGACY_KEYS: Record<string, string> = {
   [STUDENTS_KEY]: "teach101:tutoring:students",
@@ -20,6 +27,8 @@ const LEGACY_KEYS: Record<string, string> = {
   [PAYMENTS_KEY]: "teach101:tutoring:payments",
   [BOOTSTRAPPED_KEY]: "teach101:tutoring:bootstrapped",
 }
+
+const DEMO_STUDENT_IDS = new Set(["student-demo-1", "student-demo-2"])
 
 function migrateLegacyKeysOnce() {
   if (typeof window === "undefined") return
@@ -73,37 +82,89 @@ export function savePayments(payments: Payment[]) {
   writeJson(PAYMENTS_KEY, payments)
 }
 
+export function getSubjects(): Subject[] {
+  return readJson<Subject[]>(SUBJECTS_KEY, [])
+}
+
+export function saveSubjects(subjects: Subject[]) {
+  writeJson(SUBJECTS_KEY, subjects)
+}
+
+export function getChapterMaterials(): ChapterMaterials {
+  return readJson<ChapterMaterials>(MATERIALS_KEY, {})
+}
+
+export function saveChapterMaterials(materials: ChapterMaterials) {
+  writeJson(MATERIALS_KEY, materials)
+}
+
+/**
+ * One-time scrub for the hard-coded "Kay" and "Rafi" demo students that older
+ * builds auto-seeded into every signed-in account. Runs once per device; the
+ * marker flag prevents it from clobbering students that the tutor manually
+ * named the same later.
+ */
+function purgeDemoStudentsOnce() {
+  if (typeof window === "undefined") return
+  if (window.localStorage.getItem(DEMO_PURGE_KEY) === "1") return
+
+  const students = getStudents()
+  const survivors = students.filter((s) => !DEMO_STUDENT_IDS.has(s.id))
+  if (survivors.length !== students.length) {
+    saveStudents(survivors)
+    const notes = getSessionNotes().filter(
+      (note) => !DEMO_STUDENT_IDS.has(note.studentId)
+    )
+    saveSessionNotes(notes)
+    const payments = getPayments().filter(
+      (payment) => !DEMO_STUDENT_IDS.has(payment.studentId)
+    )
+    savePayments(payments)
+  }
+
+  window.localStorage.setItem(DEMO_PURGE_KEY, "1")
+}
+
 export function bootstrapIfEmpty(): {
   students: Student[]
   notes: SessionNote[]
   payments: Payment[]
+  subjects: Subject[]
+  chapterMaterials: ChapterMaterials
 } {
   if (typeof window === "undefined") {
-    return { students: [], notes: [], payments: [] }
-  }
-
-  const bootstrapped = window.localStorage.getItem(BOOTSTRAPPED_KEY) === "1"
-  const students = getStudents()
-  const notes = getSessionNotes()
-  const payments = getPayments()
-
-  if (!bootstrapped && students.length === 0 && notes.length === 0) {
-    saveStudents(demoStudents)
-    saveSessionNotes(demoSessionNotes)
-    savePayments(demoPayments)
-    window.localStorage.setItem(BOOTSTRAPPED_KEY, "1")
     return {
-      students: demoStudents,
-      notes: demoSessionNotes,
-      payments: demoPayments,
+      students: [],
+      notes: [],
+      payments: [],
+      subjects: defaultSubjects,
+      chapterMaterials: {},
     }
   }
 
-  if (students.length === 0 && notes.length === 0 && payments.length === 0) {
-    return { students: [], notes: [], payments: [] }
+  purgeDemoStudentsOnce()
+
+  const students = getStudents()
+  const notes = getSessionNotes()
+  const payments = getPayments()
+  let subjects = getSubjects()
+  const chapterMaterials = getChapterMaterials()
+
+  // Seed subjects exactly once. After this, an empty subjects list is taken at
+  // face value (user deleted them all on purpose).
+  const subjectsSeeded =
+    window.localStorage.getItem(SUBJECTS_SEEDED_KEY) === "1"
+  if (!subjectsSeeded && subjects.length === 0) {
+    subjects = defaultSubjects
+    saveSubjects(subjects)
+    window.localStorage.setItem(SUBJECTS_SEEDED_KEY, "1")
   }
 
-  return { students, notes, payments }
+  // We no longer auto-seed students/notes. Make sure the bootstrap marker is
+  // set so legacy code paths don't try.
+  window.localStorage.setItem(BOOTSTRAPPED_KEY, "1")
+
+  return { students, notes, payments, subjects, chapterMaterials }
 }
 
 export function resetToDemo() {
@@ -111,7 +172,12 @@ export function resetToDemo() {
   saveStudents(demoStudents)
   saveSessionNotes(demoSessionNotes)
   savePayments(demoPayments)
+  saveSubjects(defaultSubjects)
+  saveChapterMaterials({})
   window.localStorage.setItem(BOOTSTRAPPED_KEY, "1")
+  window.localStorage.setItem(SUBJECTS_SEEDED_KEY, "1")
+  // Allow the next bootstrap to leave these demo students in place.
+  window.localStorage.setItem(DEMO_PURGE_KEY, "1")
 }
 
 export function clearAll() {
@@ -119,7 +185,11 @@ export function clearAll() {
   window.localStorage.removeItem(STUDENTS_KEY)
   window.localStorage.removeItem(NOTES_KEY)
   window.localStorage.removeItem(PAYMENTS_KEY)
+  window.localStorage.removeItem(SUBJECTS_KEY)
+  window.localStorage.removeItem(MATERIALS_KEY)
   window.localStorage.setItem(BOOTSTRAPPED_KEY, "1")
+  window.localStorage.setItem(SUBJECTS_SEEDED_KEY, "1")
+  window.localStorage.setItem(DEMO_PURGE_KEY, "1")
 }
 
 export function exportTutoringData(

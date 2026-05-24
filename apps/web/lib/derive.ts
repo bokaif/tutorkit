@@ -1,5 +1,5 @@
 import {
-  subjects,
+  defaultSubjects,
   type ProgressStatus,
   type SessionItem,
   type SessionNote,
@@ -19,8 +19,27 @@ export const todayIso = () => new Date().toISOString().slice(0, 10)
 export const newId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
+/**
+ * Module-level subjects registry. Helpers in this file (and a handful of
+ * non-React callers) read subjects from here. The Zustand store calls
+ * `setSubjectRegistry(state.subjects)` on every subject mutation so this stays
+ * in sync with the store and Firestore.
+ *
+ * We default to the bundled NCTB list so server-rendering doesn't crash and
+ * the app feels populated before hydration completes.
+ */
+let subjectRegistry: Subject[] = defaultSubjects
+
+export function setSubjectRegistry(next: Subject[]) {
+  subjectRegistry = next
+}
+
+export function getAllSubjects(): Subject[] {
+  return subjectRegistry
+}
+
 export function getSubject(subjectId: string) {
-  return subjects.find((subject) => subject.id === subjectId)
+  return subjectRegistry.find((subject) => subject.id === subjectId)
 }
 
 export function getSessionItems(note: SessionNote): SessionItem[] {

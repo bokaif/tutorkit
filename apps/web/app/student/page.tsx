@@ -185,19 +185,35 @@ function StudentDetail() {
                     <span className="text-sm font-semibold">
                       {subject.name}
                     </span>
-                    <Button asChild size="xs" variant="outline">
-                      <a
-                        href={subject.bookFile}
-                        target="_blank"
-                        rel="noreferrer"
+                    {subject.bookFile ? (
+                      <Button asChild size="xs" variant="outline">
+                        <a
+                          href={subject.bookFile}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <ArrowSquareOut data-icon="inline-start" />
+                          Open
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        size="xs"
+                        variant="ghost"
+                        className="text-muted-foreground"
                       >
-                        <ArrowSquareOut data-icon="inline-start" />
-                        Open
-                      </a>
-                    </Button>
+                        <Link href="/library">Add</Link>
+                      </Button>
+                    )}
                   </div>
                 )
               })}
+              {student.assignedSubjectIds.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No subjects assigned. Edit student to attach subjects.
+                </p>
+              ) : null}
             </div>
           </Panel>
 

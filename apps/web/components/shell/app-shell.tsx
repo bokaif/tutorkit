@@ -9,6 +9,8 @@ import { Topbar } from "@/components/shell/topbar"
 import { QuickLogFab, QuickLogSheet } from "@/components/shell/quick-log"
 import { CommandPalette } from "@/components/shell/command-palette"
 import { InstallPrompt } from "@/components/shell/install-prompt"
+import { TourOverlay } from "@/components/tour/tour-overlay"
+import { TourProvider } from "@/components/tour/tour-provider"
 import { useAuth } from "@/lib/auth"
 import { useHydrate, useTutoringStore } from "@/lib/store"
 import { useFirestoreSync } from "@/lib/sync"
@@ -44,37 +46,40 @@ function AuthedShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-svh w-full bg-background text-foreground">
-      <Sidebar syncStatus={syncStatus} />
-      <MobileSidebar
-        open={menuOpen}
-        onOpenChange={setMenuOpen}
-        syncStatus={syncStatus}
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar
-          onQuickLog={() => setQuickLogOpen(true)}
-          onCommand={() => setCommandOpen(true)}
-          onMenu={() => setMenuOpen(true)}
+    <TourProvider>
+      <div className="flex h-svh w-full bg-background text-foreground">
+        <Sidebar syncStatus={syncStatus} />
+        <MobileSidebar
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          syncStatus={syncStatus}
         />
-        <main className="app-scroll min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
-          {children}
-        </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar
+            onQuickLog={() => setQuickLogOpen(true)}
+            onCommand={() => setCommandOpen(true)}
+            onMenu={() => setMenuOpen(true)}
+          />
+          <main className="app-scroll min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
+            {children}
+          </main>
+        </div>
+        <QuickLogFab onClick={() => setQuickLogOpen(true)} />
+        <QuickLogSheet
+          open={quickLogOpen}
+          onOpenChange={setQuickLogOpen}
+          defaultStudentId={students[0]?.id}
+        />
+        <CommandPalette
+          open={commandOpen}
+          onOpenChange={setCommandOpen}
+          onQuickLog={() => setQuickLogOpen(true)}
+        />
+        <InstallPrompt />
+        <TourOverlay />
+        <Toaster />
       </div>
-      <QuickLogFab onClick={() => setQuickLogOpen(true)} />
-      <QuickLogSheet
-        open={quickLogOpen}
-        onOpenChange={setQuickLogOpen}
-        defaultStudentId={students[0]?.id}
-      />
-      <CommandPalette
-        open={commandOpen}
-        onOpenChange={setCommandOpen}
-        onQuickLog={() => setQuickLogOpen(true)}
-      />
-      <InstallPrompt />
-      <Toaster />
-    </div>
+    </TourProvider>
   )
 }
 

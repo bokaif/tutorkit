@@ -7,7 +7,6 @@ import {
   type ScheduleSlot,
   type Student,
   studentPalette,
-  subjects,
 } from "@/lib/tutoring-data"
 import { Button } from "@workspace/ui/components/button"
 import { Checkbox } from "@workspace/ui/components/checkbox"
@@ -37,7 +36,7 @@ type StudentFormState = {
   scheduleSlots: ScheduleSlot[]
 }
 
-function emptyForm(): StudentFormState {
+function emptyForm(subjectIds: string[]): StudentFormState {
   return {
     name: "",
     guardianPhone: "",
@@ -45,7 +44,7 @@ function emptyForm(): StudentFormState {
     monthlyFee: "",
     classesPerPayment: "",
     color: studentPalette[0] ?? "#3B82F6",
-    assignedSubjectIds: subjects.map((s) => s.id),
+    assignedSubjectIds: subjectIds,
     scheduleSlots: [],
   }
 }
@@ -61,8 +60,12 @@ export function StudentDialog({
 }) {
   const addStudent = useTutoringStore((s) => s.addStudent)
   const updateStudent = useTutoringStore((s) => s.updateStudent)
+  const subjects = useTutoringStore((s) => s.subjects)
+  const allSubjectIds = useMemo(() => subjects.map((s) => s.id), [subjects])
 
-  const [form, setForm] = useState<StudentFormState>(emptyForm())
+  const [form, setForm] = useState<StudentFormState>(() =>
+    emptyForm(allSubjectIds)
+  )
 
   useEffect(() => {
     if (!open) return
@@ -79,9 +82,9 @@ export function StudentDialog({
         scheduleSlots: student.scheduleSlots ?? [],
       })
     } else {
-      setForm(emptyForm())
+      setForm(emptyForm(allSubjectIds))
     }
-  }, [open, student])
+  }, [open, student, allSubjectIds])
 
   const allSelected = form.assignedSubjectIds.length === subjects.length
 

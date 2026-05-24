@@ -8,8 +8,38 @@ export type Subject = {
   id: string
   code: string
   name: string
+  /** URL or relative path to the primary book / PDF for this subject. */
   bookFile: string
   chapters: string[]
+  color?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type MaterialKind = "link" | "note" | "file"
+
+export type Material = {
+  id: string
+  kind: MaterialKind
+  title: string
+  /** URL for `link` and `file` materials. */
+  url?: string
+  /** Free-form body for `note` materials. */
+  body?: string
+  createdAt: string
+}
+
+/**
+ * Materials keyed by subject id, then by chapter index, then a flat list of
+ * materials. We key by chapter *index* (not slug) because chapter titles are
+ * editable; we keep the indices stable by deleting in place rather than
+ * shifting on remove. (`removeChapter` handles the shift if you ever drop a
+ * chapter, see store.ts.)
+ */
+export type ChapterMaterials = {
+  [subjectId: string]: {
+    [chapterIndex: number]: Material[]
+  }
 }
 
 export type ScheduleSlot = {
@@ -96,7 +126,11 @@ export const studentPalette = [
   "#10B981", // emerald
 ]
 
-export const subjects: Subject[] = [
+/**
+ * Default subjects seeded into a brand-new account so the app isn't empty on
+ * first sign-in. Users can edit / delete / add their own from the Library.
+ */
+export const defaultSubjects: Subject[] = [
   {
     id: "physics",
     code: "P",
@@ -217,6 +251,10 @@ const isoDate = (offsetDays = 0) => {
   return d.toISOString().slice(0, 10)
 }
 
+/**
+ * Sample students used by the explicit "Reset to demo data" action. Brand-new
+ * accounts no longer auto-seed these — every tutor starts with an empty roster.
+ */
 export const demoStudents: Student[] = [
   {
     id: "student-demo-1",
@@ -261,7 +299,7 @@ export const demoStudents: Student[] = [
     monthlyFee: "4500",
     classesPerPayment: "6",
     paidThroughClassCount: 0,
-    assignedSubjectIds: subjects.map((subject) => subject.id),
+    assignedSubjectIds: defaultSubjects.map((subject) => subject.id),
     chapterProgress: {
       chemistry: {
         0: "completed",
