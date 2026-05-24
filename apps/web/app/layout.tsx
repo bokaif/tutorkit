@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Figtree, Geist, Geist_Mono } from "next/font/google"
 
 import "@workspace/ui/globals.css"
@@ -18,7 +19,10 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
-export const metadata = {
+const siteUrl = "https://tutorkit.web.app"
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "TutorKit",
   description: "Personal tutoring desk: classes, schedules, payments, progress.",
   manifest: "/manifest.webmanifest",
@@ -26,7 +30,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     title: "TutorKit",
-    statusBarStyle: "black-translucent" as const,
+    statusBarStyle: "black-translucent",
   },
   icons: {
     icon: [
@@ -35,6 +39,30 @@ export const metadata = {
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "TutorKit",
+    title: "TutorKit",
+    description:
+      "Personal tutoring desk: classes, schedules, payments, progress.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1920,
+        height: 1200,
+        alt: "TutorKit — personal tutoring command center",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TutorKit",
+    description:
+      "Personal tutoring desk: classes, schedules, payments, progress.",
+    images: ["/og.png"],
   },
 }
 

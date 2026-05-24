@@ -2,26 +2,29 @@
 
 > Personal tutoring desk: classes, schedules, payments, contribution heat-map.
 
+![TutorKit dashboard](apps/web/public/og.png)
+
 A single-user PWA built for home tutors who want a tactile, keyboard-driven command center instead of a generic CRM. Log a class in two taps, see your year-long GitHub-style activity graph, watch each student climb their chapter ladder, and keep payment history honest — synced across all your devices.
 
-**Live:** [`https://tutorkit.web.app`](https://tutorkit.web.app) (Firebase Hosting) · [`https://tutorkit-app.vercel.app`](https://tutorkit-app.vercel.app) (Vercel mirror)
+**Live:** [https://tutorkit.web.app](https://tutorkit.web.app)
 
 ---
 
 ## Features
 
 - **Year-long contribution graph** — GitHub-style heat-map of every class you've taught.
-- **Quick Log sheet** — log a class in one keystroke (`Q`), pick multiple subjects + chapters per class, mark chapters done, attach homework.
+- **Quick Log sheet** — log a class in one keystroke (`N`), pick multiple subjects + chapters per class, mark chapters done, attach homework.
 - **Roster + chapter ladder** — every student has a colored gradient avatar, assigned subjects, and a chapter ladder that fills in as you teach.
+- **Library** — subjects, chapters, per-chapter materials (links, notes, files), and textbook URLs.
 - **Weekly schedule grid** — recurring slots rendered on a 7-day timeline, color-coded per student.
 - **Payment ledger** — log payments per student, see month-by-month totals, outstanding balances.
 - **Stats page** — total minutes taught, current streak, top student, top subject, per-subject breakdown.
 - **Homework + revision queue** — surfaces what's due next on the Today screen.
-- **Book shelf** — per-student PDF library (PDFs are gitignored / served from local disk in dev).
-- **Command palette** — `Cmd+K` to jump anywhere or run any action.
-- **Firestore sync** — anonymous-auth gives you a stable per-device cloud copy; multi-device once you wire the same uid (see *Multi-device* below).
-- **PWA** — installable from Chrome/Safari, offline-capable via service worker + Firestore IndexedDB persistence, custom maskable icons.
+- **Command palette** — `Cmd/Ctrl + K` to jump anywhere or run any action.
+- **Google sign-in + cloud sync** — your data lives in a private per-user document, with offline support via IndexedDB.
+- **PWA** — installable from Chrome/Safari, offline-capable via service worker, custom maskable icons.
 - **Mobile-first shell** — hamburger drawer, touch-friendly chips, responsive grids.
+- **Onboarding tour** — a short guided walkthrough on first sign-in (replay anytime from `?` in the top bar).
 
 ## Tech stack
 
@@ -29,11 +32,10 @@ A single-user PWA built for home tutors who want a tactile, keyboard-driven comm
 - **React 19**, **TypeScript 5**
 - **Tailwind CSS v4** with OKLCH design tokens
 - **shadcn/ui** components (radix primitives, customized)
-- **HeroUI v3** styling layer (pure-black bg, blue accent)
 - **Zustand** for client state, `localStorage` persistence
-- **Firebase** — Anonymous Auth + Firestore (with IndexedDB offline persistence)
+- **Firebase** — Google Auth + Firestore (with IndexedDB offline persistence)
 - **Turborepo** monorepo, npm workspaces
-- **GitHub Actions** → Firebase Hosting auto-deploy on every push to `main`
+- **GitHub Actions** → auto-deploy on every push to `main`
 
 ## Project structure
 
@@ -46,21 +48,24 @@ A single-user PWA built for home tutors who want a tactile, keyboard-driven comm
 │       │   ├── students/          # Roster listing
 │       │   ├── student/           # /student?id=… detail (query-param for static export)
 │       │   ├── schedule/, payments/, sessions/, stats/, library/
-│       │   └── layout.tsx         # Root shell, theme, PWA manifest hook
+│       │   └── layout.tsx         # Root shell, theme, PWA + OG metadata
 │       ├── components/
 │       │   ├── shell/             # AppShell, Sidebar, Topbar, QuickLog, CommandPalette, InstallPrompt
 │       │   ├── students/          # StudentCard, ChapterLadder, StudentDialog
+│       │   ├── library/           # ChapterDetailSheet (materials + session timeline)
+│       │   ├── tour/              # Onboarding spotlight tour
 │       │   ├── sessions/          # SessionFeed, SessionRow
 │       │   ├── graph/             # ContributionGraph
 │       │   └── ui-bits.tsx        # SubjectMark, StudentAvatar, Pill, Panel
 │       ├── lib/
-│       │   ├── firebase.ts        # Firebase init + ensureSignedIn (anon)
+│       │   ├── firebase.ts        # Firebase init + Google sign-in
+│       │   ├── auth.tsx           # AuthProvider + useAuth
 │       │   ├── sync.ts            # useFirestoreSync hook (bi-directional)
 │       │   ├── store.ts           # Zustand store
 │       │   ├── tutoring-data.ts   # Types (Student, SessionNote, SessionItem, Payment, Subject)
 │       │   ├── tutoring-storage.ts# localStorage layer + legacy-key migration
 │       │   └── derive.ts          # Derived selectors (streak, totals, progress)
-│       └── public/                # PWA icons, manifest, service worker
+│       └── public/                # PWA icons, manifest, service worker, og.png
 ├── packages/
 │   ├── ui/                        # @workspace/ui — shadcn components shared across apps
 │   ├── eslint-config/
@@ -68,8 +73,8 @@ A single-user PWA built for home tutors who want a tactile, keyboard-driven comm
 ├── scripts/
 │   └── gen-pwa-icons.mjs          # Regenerate icon-{192,512,maskable-512}.png from a source
 ├── .github/workflows/
-│   └── firebase-hosting-deploy.yml# CI → build static export → deploy live channel
-├── firebase.json, .firebaserc     # Hosting target `tutorkit` → tutorkit.web.app
+│   └── firebase-hosting-deploy.yml# CI → build static export → deploy
+├── firebase.json, .firebaserc
 ├── firestore.rules                # Per-user document isolation
 └── turbo.json, package.json       # Monorepo wiring
 ```
@@ -86,7 +91,7 @@ npm install
 
 ### Environment
 
-Copy the example file and fill in your own Firebase web config (or use the same `teach101-app` project if you forked):
+Copy the example file and fill in your own Firebase web config:
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
@@ -104,7 +109,9 @@ NEXT_PUBLIC_FIREBASE_APP_ID=…
 
 Grab these from **Firebase Console → Project settings → Your apps → Web app**.
 
-If you skip the env file the app still runs — it just falls back to `localStorage`-only mode (the sidebar badge will read `disabled`).
+Enable **Google** as a sign-in provider under Authentication → Sign-in method.
+
+If you skip the env file the app still runs — it falls back to `localStorage`-only mode (the sidebar badge will read `Local only`).
 
 ### Run
 
@@ -117,30 +124,13 @@ npm run build          # static export → apps/web/out/
 
 ## Deployment
 
-### Firebase Hosting (production, auto-deploy)
-
-Every push to `main` triggers `.github/workflows/firebase-hosting-deploy.yml`, which:
-
-1. `npm ci`
-2. `npm run typecheck`
-3. `npm run build` → static export under `apps/web/out/`
-4. `FirebaseExtended/action-hosting-deploy@v0` → live channel of the `tutorkit` Hosting site
-
-You can also trigger it manually from the **Actions** tab → *Deploy to Firebase Hosting* → *Run workflow*.
+Every push to `main` triggers `.github/workflows/firebase-hosting-deploy.yml`, which typechecks, builds the static export, and deploys `apps/web/out/`.
 
 #### Required GitHub Actions secret
 
 | Secret | What it is |
 |---|---|
-| `FIREBASE_SERVICE_ACCOUNT_TEACH101_APP` | JSON service-account key with `roles/firebasehosting.admin` (and `firebase.viewer`, `serviceusage.serviceUsageConsumer`, `iam.serviceAccountUser`). Already provisioned on `bokaif/tutorkit`. |
-
-To regenerate from scratch:
-
-```bash
-firebase init hosting:github
-```
-
-…which auto-creates the service account, binds the roles, and uploads the secret. Pick **No** when it asks to write workflow files (the one in `.github/workflows/` already handles build+deploy).
+| `FIREBASE_SERVICE_ACCOUNT_TEACH101_APP` | JSON service-account key with hosting deploy permissions. |
 
 #### Manual deploy
 
@@ -148,10 +138,6 @@ firebase init hosting:github
 npm run build
 firebase deploy --only hosting --project teach101-app
 ```
-
-### Vercel (mirror)
-
-The same static export deploys cleanly to Vercel. The project is linked as `tutorkit-app.vercel.app`; push to `main` deploys via the Git integration. Env vars (`NEXT_PUBLIC_FIREBASE_*`) are set in the Vercel dashboard.
 
 ## Data model
 
@@ -161,9 +147,10 @@ type Student = {
   name: string
   color: string                    // hex; drives gradient avatar
   assignedSubjectIds: string[]
-  schedule?: { day: 0|1|2|3|4|5|6; start: string; end: string }[]
-  ratePerHour?: number
-  notes?: string
+  scheduleSlots?: { dayOfWeek: number; startTime: string; durationMin: number }[]
+  chapterProgress: Record<string, Record<number, ProgressStatus>>
+  monthlyFee?: string
+  classesPerPayment?: string
 }
 
 type SessionItem = { subjectId: string; chapterIndex: number }
@@ -177,26 +164,32 @@ type SessionNote = {
   note: string
   tags?: string[]
   homework?: string
-  nextStep?: string
   durationMin?: number
   date: string                     // YYYY-MM-DD
-  createdAt: string                // ISO
 }
 
-type Payment = {
+type Subject = {
   id: string
-  studentId: string
-  amount: number
-  date: string                     // YYYY-MM-DD
-  note?: string
+  code: string
+  name: string
+  bookFile: string                 // URL to primary textbook / PDF
+  chapters: string[]
+}
+
+type Material = {
+  id: string
+  kind: "link" | "note" | "file"
+  title: string
+  url?: string
+  body?: string
 }
 ```
 
-State lives in a Zustand store (`apps/web/lib/store.ts`) hydrated from `localStorage`. When Firebase is configured, `useFirestoreSync` mirrors the entire bag into a single document at `users/{uid}`. Schema migrations between `teach101:*` and `tutorkit:*` localStorage keys are handled transparently on first load.
+State lives in a Zustand store (`apps/web/lib/store.ts`) hydrated from `localStorage`. When Firebase is configured, `useFirestoreSync` mirrors the entire bag into a single document at `users/{uid}`.
 
 ## Firestore security
 
-Anonymous Auth gives each device a stable uid. The rules in `firestore.rules` restrict reads/writes so only the owner can touch their own document:
+Google Auth gives each tutor a stable uid. The rules in `firestore.rules` restrict reads/writes so only the owner can touch their own document:
 
 ```ts
 match /users/{uid} {
@@ -204,21 +197,17 @@ match /users/{uid} {
 }
 ```
 
-Everything else is denied. Deploy rule changes with:
+Deploy rule changes with:
 
 ```bash
 firebase deploy --only firestore:rules --project teach101-app
 ```
 
-## Multi-device sync
-
-Anonymous Auth uids are per-device. If you want the same data on phone + laptop, link both anonymous accounts to a real provider (Google, email, etc.) via `linkWithPopup` / `linkWithCredential` — the doc id stays the same and both devices land on the same `users/{uid}` row. This isn't wired into the UI yet; it's a one-line addition in `lib/firebase.ts` when you're ready.
-
 ## Keyboard shortcuts
 
 | Key | Action |
 |---|---|
-| `Q` | Open Quick Log |
+| `N` | Open Quick Log |
 | `Cmd/Ctrl + K` | Command palette |
 | `Esc` | Close any sheet/dialog |
 
@@ -226,7 +215,7 @@ Anonymous Auth uids are per-device. If you want the same data on phone + laptop,
 
 - Manifest: `apps/web/public/manifest.webmanifest`
 - Service worker: `apps/web/public/sw.js` (stale-while-revalidate)
-- Install prompt shows once on supported browsers; dismissal is remembered for 30 days (`tutorkit:install-prompt-dismissed-at`).
+- Install prompt shows once on supported browsers; dismissal is remembered for 7 days.
 - Regenerate icons from a source image: `node scripts/gen-pwa-icons.mjs <path-to-source.png>`.
 
 ## Scripts
