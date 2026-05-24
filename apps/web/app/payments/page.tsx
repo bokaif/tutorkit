@@ -379,7 +379,7 @@ function PaymentRow({
   onDelete: () => void
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-transparent bg-card px-3 py-2.5 transition-colors hover:border-border">
+    <div className="flex items-center gap-3 rounded-lg bg-secondary/55 px-3 py-2.5 ring-1 ring-border/60 transition-colors hover:bg-secondary hover:ring-border">
       {student ? (
         <StudentAvatar student={student} />
       ) : (

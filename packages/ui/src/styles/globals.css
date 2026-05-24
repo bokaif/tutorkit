@@ -20,21 +20,23 @@
 
     .dark,
     [data-theme="dark"] {
-        /* Pure-black canvas */
-        --background: oklch(0.04 0.002 280);
+        /* Four-tier surface ramp.
+           Canvas reads as deep dark without OLED-banding. Each subsequent
+           tier lifts a perceptually-even step so nesting always reads. */
+        --background: oklch(0.05 0.003 280);          /* canvas */
         --foreground: oklch(0.97 0 0);
 
-        /* Cards / surfaces — a notch above the canvas so they read as distinct
-           layers without needing borders or shadows. */
-        --surface: oklch(0.17 0.005 280);
-        --surface-secondary: oklch(0.2 0.005 280);
-        --surface-tertiary: oklch(0.23 0.005 280);
+        --surface: oklch(0.16 0.005 280);             /* card / Panel */
+        --surface-secondary: oklch(0.22 0.006 280);   /* nested items in cards */
+        --surface-tertiary: oklch(0.28 0.007 280);    /* hover / active */
 
-        --overlay: oklch(0.18 0.005 280);
+        --overlay: oklch(0.18 0.005 280);             /* popovers / sheets */
 
-        --default: oklch(0.21 0.005 280);
+        /* `--default` mirrors `--surface-secondary` so the legacy
+           `bg-muted` Tailwind class lands on the right tier. */
+        --default: oklch(0.22 0.006 280);
         --default-foreground: oklch(0.97 0 0);
-        --muted: oklch(0.68 0.01 280);
+        --muted: oklch(0.7 0.012 280);                /* muted foreground text */
 
         /* Iris violet — keeps the calm lightness but adds the chroma back
            so the brand color has character without being aggressive. */
@@ -42,12 +44,14 @@
         --accent-foreground: oklch(0.99 0 0);
         --focus: var(--accent);
 
-        --border: oklch(1 0 0 / 9%);
+        /* Borders are a hair more visible so the layered surfaces have a
+           clear ridge even before hover. */
+        --border: oklch(1 0 0 / 11%);
         --separator: oklch(1 0 0 / 7%);
 
-        --field-background: oklch(0.17 0.005 280);
+        --field-background: oklch(0.16 0.005 280);
         --field-foreground: var(--foreground);
-        --field-border: oklch(1 0 0 / 9%);
+        --field-border: oklch(1 0 0 / 11%);
         --field-placeholder: oklch(0.6 0.01 280);
     }
 }
@@ -183,7 +187,7 @@
 
     /* Contribution heat ramp tuned for the iris violet accent */
     .heat-0 {
-        background-color: oklch(1 0 0 / 0.06);
+        background-color: oklch(1 0 0 / 0.08);
     }
     .heat-1 {
         background-color: oklch(0.38 0.1 280);
@@ -217,7 +221,7 @@
     }
 
     .glass-card {
-        background: oklch(0.17 0.005 280 / 0.85);
+        background: oklch(0.16 0.005 280 / 0.85);
         backdrop-filter: blur(18px);
         -webkit-backdrop-filter: blur(18px);
     }

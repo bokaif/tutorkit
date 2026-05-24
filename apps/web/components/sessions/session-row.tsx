@@ -23,7 +23,7 @@ export function SessionRow({
   const primarySubject = getSubject(items[0]?.subjectId ?? "")
 
   return (
-    <div className="group flex items-start gap-3 rounded-lg border border-transparent bg-card p-3 transition-colors hover:border-border">
+    <div className="group flex items-start gap-3 rounded-lg bg-secondary/55 p-3 ring-1 ring-border/60 transition-colors hover:bg-secondary hover:ring-border">
       {primarySubject ? (
         <SubjectMark subject={primarySubject} size="md" className="mt-0.5" />
       ) : (
@@ -60,7 +60,7 @@ export function SessionRow({
             return (
               <span
                 key={`${item.subjectId}-${item.chapterIndex}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 py-0.5 pr-2.5 pl-0.5 text-[11px] font-medium text-foreground/85"
+                className="inline-flex items-center gap-1.5 rounded-full bg-card py-0.5 pr-2.5 pl-0.5 text-[11px] font-medium text-foreground/85 ring-1 ring-border"
               >
                 <SubjectMark subject={subject} size="sm" />
                 {subject.name}

@@ -138,7 +138,7 @@ export default function TodayPage() {
                 <Link
                   key={`${student.id}-${startTime}`}
                   href={`/student?id=${student.id}`}
-                  className="tactile flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:border-primary/30 hover:bg-primary/5"
+                  className="tactile flex items-center gap-3 rounded-lg bg-secondary/60 p-3 ring-1 ring-border hover:bg-secondary hover:ring-primary/30"
                 >
                   <StudentAvatar student={student} />
                   <div className="min-w-0 flex-1">
@@ -193,7 +193,7 @@ export default function TodayPage() {
                     <Link
                       key={student.id}
                       href={`/student?id=${student.id}`}
-                      className="tactile flex items-center gap-2 rounded-lg bg-destructive/5 px-3 py-2 hover:bg-destructive/10"
+                      className="tactile flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 ring-1 ring-destructive/15 hover:bg-destructive/18"
                     >
                       <StudentAvatar student={student} size="sm" />
                       <span className="flex-1 text-sm font-semibold">
@@ -235,7 +235,7 @@ export default function TodayPage() {
                   <Link
                     key={`${item.student.id}-${item.subject.id}-${item.chapterIndex}`}
                     href={`/student?id=${item.student.id}`}
-                    className="tactile rounded-lg bg-[color:var(--warning)]/10 px-3 py-2 hover:bg-[color:var(--warning)]/15"
+                    className="tactile rounded-lg bg-[color:var(--warning)]/12 px-3 py-2 ring-1 ring-[color:var(--warning)]/15 hover:bg-[color:var(--warning)]/20"
                   >
                     <p className="text-sm font-semibold">{item.chapter}</p>
                     <p className="text-xs text-muted-foreground">

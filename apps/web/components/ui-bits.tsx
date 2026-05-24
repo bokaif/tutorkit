@@ -11,7 +11,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/60 bg-card",
+        "rounded-2xl border border-border bg-card",
         className
       )}
       {...rest}
@@ -76,7 +76,7 @@ export function KPI({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-colors hover:border-border",
+        "group relative overflow-hidden rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/30",
         className
       )}
     >
@@ -149,19 +149,19 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-muted/40 p-8 text-center",
+        "flex flex-col items-center gap-3 rounded-xl bg-secondary/55 p-7 text-center",
         className
       )}
     >
       {icon ? (
-        <div className="grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
+        <div className="grid size-11 place-items-center rounded-xl bg-primary/12 text-primary">
           {icon}
         </div>
       ) : null}
       <div className="space-y-1">
-        <p className="font-heading text-base font-semibold">{title}</p>
+        <p className="font-heading text-[15px] font-semibold">{title}</p>
         {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-[13px] text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {action}
